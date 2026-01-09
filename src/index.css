@@ -41,6 +41,11 @@
     --gradient-accent: linear-gradient(135deg, hsl(185 60% 55%), hsl(195 65% 45%));
     --shadow-card: 0 4px 20px -4px hsl(220 30% 5% / 0.5);
     --shadow-glow: 0 0 30px hsl(185 60% 55% / 0.15);
+    
+    /* Snippet specific */
+    --snippet-bg: linear-gradient(180deg, hsl(220 18% 12%) 0%, hsl(220 20% 10%) 100%);
+    --example-bg: hsl(185 40% 12%);
+    --example-border: hsl(185 50% 20%);
   }
 
   .dark {
@@ -56,6 +61,7 @@
 
   html {
     font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -96,6 +102,49 @@
     @apply border-primary/30 shadow-glow;
   }
 
+  /* Full-view snippet card */
+  .snippet-card {
+    @apply min-h-[calc(100svh-10rem)] rounded-3xl p-6 border border-border/40;
+    background: var(--snippet-bg);
+    box-shadow: var(--shadow-card), inset 0 1px 0 0 hsl(220 15% 18% / 0.5);
+  }
+
+  .snippet-feed {
+    @apply snap-y snap-mandatory overflow-y-auto;
+    scroll-padding-top: 1rem;
+  }
+
+  .snippet-feed > * {
+    @apply snap-start;
+  }
+
+  .example-block {
+    @apply rounded-xl p-4 border;
+    background: var(--example-bg);
+    border-color: var(--example-border);
+  }
+
+  .quiz-button {
+    @apply w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-primary-foreground transition-all duration-300;
+    background: var(--gradient-accent);
+  }
+
+  .quiz-button:hover {
+    @apply opacity-90 scale-[0.99];
+  }
+
+  .quiz-button:active {
+    @apply scale-[0.97];
+  }
+
+  .snippet-end-indicator {
+    @apply flex flex-col items-center gap-3 mt-8 pt-6;
+  }
+
+  .snippet-end-line {
+    @apply w-12 h-0.5 rounded-full bg-border;
+  }
+
   .nav-item {
     @apply flex flex-col items-center gap-1 px-4 py-2 text-muted-foreground transition-colors duration-200;
   }
@@ -113,7 +162,7 @@
   }
 
   .tag {
-    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-secondary text-secondary-foreground;
+    @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold bg-secondary text-secondary-foreground uppercase tracking-wide;
   }
 
   .progress-bar {
