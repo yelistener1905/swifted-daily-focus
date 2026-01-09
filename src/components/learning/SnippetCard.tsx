@@ -1,36 +1,82 @@
-import { BookOpen } from "lucide-react";
+import { Lightbulb, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CSSProperties } from "react";
 
 interface SnippetCardProps {
-  title: string;
-  description: string;
   topic: string;
+  title: string;
+  explanation: string;
+  example: string;
   readTime: string;
   className?: string;
   style?: CSSProperties;
+  isLast?: boolean;
 }
 
-export function SnippetCard({ title, description, topic, readTime, className, style }: SnippetCardProps) {
+export function SnippetCard({ 
+  topic, 
+  title, 
+  explanation, 
+  example, 
+  readTime, 
+  className, 
+  style,
+  isLast 
+}: SnippetCardProps) {
   return (
-    <article className={cn("learning-card", className)} style={style}>
-      <div className="flex items-center justify-between gap-3 mb-3">
+    <article 
+      className={cn(
+        "snippet-card flex flex-col",
+        className
+      )} 
+      style={style}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <span className="tag">{topic}</span>
-        <span className="text-xs text-muted-foreground">{readTime}</span>
+        <span className="text-xs text-muted-foreground">{readTime} read</span>
       </div>
       
-      <h3 className="font-semibold text-foreground leading-snug mb-2">
+      {/* Title */}
+      <h2 className="text-xl font-bold text-foreground leading-tight mb-5">
         {title}
-      </h3>
+      </h2>
       
-      <p className="body-text line-clamp-2 mb-4">
-        {description}
-      </p>
+      {/* Explanation */}
+      <div className="flex-1 space-y-5">
+        <p className="text-[15px] text-secondary-foreground leading-relaxed">
+          {explanation}
+        </p>
+        
+        {/* Example Block */}
+        <div className="example-block">
+          <div className="flex items-center gap-2 mb-3">
+            <Lightbulb size={16} className="text-primary" />
+            <span className="text-xs font-semibold text-primary uppercase tracking-wide">
+              Example
+            </span>
+          </div>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {example}
+          </p>
+        </div>
+      </div>
       
-      <button className="flex items-center gap-2 text-primary text-sm font-medium hover:opacity-80 transition-opacity">
-        <BookOpen size={16} />
-        <span>Read Snippet</span>
+      {/* Quiz Button */}
+      <button className="quiz-button mt-6">
+        <HelpCircle size={18} />
+        <span>Take Quick Quiz</span>
       </button>
+      
+      {/* End Indicator */}
+      <div className="snippet-end-indicator">
+        <div className="snippet-end-line" />
+        {isLast ? (
+          <span className="text-xs text-muted-foreground">You're all caught up</span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Scroll for more</span>
+        )}
+      </div>
     </article>
   );
 }

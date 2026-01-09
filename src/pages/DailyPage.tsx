@@ -1,5 +1,5 @@
 import { DailyGoalCard } from "@/components/learning/DailyGoalCard";
-import { SnippetCard } from "@/components/learning/SnippetCard";
+import { BookOpen } from "lucide-react";
 
 const todaysGoals = [
   { title: "Read 1 snippet", subtitle: "Any topic", completed: true },
@@ -7,17 +7,15 @@ const todaysGoals = [
   { title: "Explore a new topic", subtitle: "Try something different", completed: false },
 ];
 
-const scheduledSnippets = [
+const savedSnippets = [
   {
-    title: "The Power of Compound Interest",
-    description: "How small, consistent investments grow exponentially over time.",
     topic: "Finance",
+    title: "The Power of Compound Interest",
     readTime: "4 min",
   },
   {
-    title: "Why We Dream: Theories Explained",
-    description: "From memory consolidation to emotional processing—what science says about dreams.",
     topic: "Science",
+    title: "Why We Dream: Theories Explained",
     readTime: "5 min",
   },
 ];
@@ -58,17 +56,28 @@ export default function DailyPage() {
         </div>
       </section>
 
-      {/* Scheduled Snippets */}
+      {/* Saved Snippets */}
       <section>
         <h2 className="section-title mb-4">Saved for Later</h2>
         <div className="space-y-3">
-          {scheduledSnippets.map((snippet, index) => (
-            <SnippetCard
+          {savedSnippets.map((snippet, index) => (
+            <article 
               key={index}
-              {...snippet}
-              className="animate-slide-up"
+              className="learning-card animate-slide-up"
               style={{ animationDelay: `${(index + 3) * 100}ms` }}
-            />
+            >
+              <div className="flex items-center justify-between mb-3">
+                <span className="tag">{snippet.topic}</span>
+                <span className="text-xs text-muted-foreground">{snippet.readTime}</span>
+              </div>
+              <h3 className="font-semibold text-foreground leading-snug mb-3">
+                {snippet.title}
+              </h3>
+              <button className="flex items-center gap-2 text-primary text-sm font-medium hover:opacity-80 transition-opacity">
+                <BookOpen size={16} />
+                <span>Read Snippet</span>
+              </button>
+            </article>
           ))}
         </div>
       </section>
