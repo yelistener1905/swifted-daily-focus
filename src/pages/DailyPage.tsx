@@ -1,22 +1,24 @@
 import { DailyGoalCard } from "@/components/learning/DailyGoalCard";
-import { LessonCard } from "@/components/learning/LessonCard";
+import { SnippetCard } from "@/components/learning/SnippetCard";
 
 const todaysGoals = [
-  { title: "Complete 1 lesson", subtitle: "React Hooks", completed: true },
-  { title: "Read for 10 minutes", subtitle: "Any topic", completed: false },
-  { title: "Review flashcards", subtitle: "5 cards remaining", completed: false },
+  { title: "Read 1 snippet", subtitle: "Any topic", completed: true },
+  { title: "Learn for 10 minutes", subtitle: "Stay curious", completed: false },
+  { title: "Explore a new topic", subtitle: "Try something different", completed: false },
 ];
 
-const scheduledLessons = [
+const scheduledSnippets = [
   {
-    title: "State Management Patterns",
-    category: "React",
-    duration: "14 min",
+    title: "The Power of Compound Interest",
+    description: "How small, consistent investments grow exponentially over time.",
+    topic: "Finance",
+    readTime: "4 min",
   },
   {
-    title: "Database Design Basics",
-    category: "SQL",
-    duration: "20 min",
+    title: "Why We Dream: Theories Explained",
+    description: "From memory consolidation to emotional processing—what science says about dreams.",
+    topic: "Science",
+    readTime: "5 min",
   },
 ];
 
@@ -50,22 +52,22 @@ export default function DailyPage() {
             <DailyGoalCard
               key={index}
               {...goal}
-              style={{ animationDelay: `${index * 100}ms` } as React.CSSProperties}
+              style={{ animationDelay: `${index * 100}ms` }}
             />
           ))}
         </div>
       </section>
 
-      {/* Scheduled Lessons */}
+      {/* Scheduled Snippets */}
       <section>
-        <h2 className="section-title mb-4">Scheduled</h2>
+        <h2 className="section-title mb-4">Saved for Later</h2>
         <div className="space-y-3">
-          {scheduledLessons.map((lesson, index) => (
-            <LessonCard
+          {scheduledSnippets.map((snippet, index) => (
+            <SnippetCard
               key={index}
-              {...lesson}
+              {...snippet}
               className="animate-slide-up"
-              style={{ animationDelay: `${(index + 3) * 100}ms` } as React.CSSProperties}
+              style={{ animationDelay: `${(index + 3) * 100}ms` }}
             />
           ))}
         </div>
