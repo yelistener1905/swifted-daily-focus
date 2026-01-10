@@ -102,28 +102,14 @@
     @apply border-primary/30 shadow-glow;
   }
 
-  /* Full-view snippet card */
-  .snippet-card {
-    @apply min-h-[calc(100svh-10rem)] rounded-3xl p-6 border border-border/40;
-    background: var(--snippet-bg);
-    box-shadow: var(--shadow-card), inset 0 1px 0 0 hsl(220 15% 18% / 0.5);
-  }
-
-  .snippet-feed {
-    @apply snap-y snap-mandatory overflow-y-auto;
-    scroll-padding-top: 1rem;
-  }
-
-  .snippet-feed > * {
-    @apply snap-start;
-  }
-
+  /* Example block for snippets */
   .example-block {
     @apply rounded-xl p-4 border;
     background: var(--example-bg);
     border-color: var(--example-border);
   }
 
+  /* Quiz button */
   .quiz-button {
     @apply w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-primary-foreground transition-all duration-300;
     background: var(--gradient-accent);
@@ -137,12 +123,9 @@
     @apply scale-[0.97];
   }
 
-  .snippet-end-indicator {
-    @apply flex flex-col items-center gap-3 mt-8 pt-6;
-  }
-
-  .snippet-end-line {
-    @apply w-12 h-0.5 rounded-full bg-border;
+  /* Prose styling for long-form content */
+  .prose p {
+    @apply text-secondary-foreground;
   }
 
   .nav-item {
