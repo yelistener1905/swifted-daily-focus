@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle, XCircle, Trophy, ArrowRight, Sparkles } from "lucide-react";
+import { CheckCircle, XCircle, Trophy, ArrowRight, ArrowLeft, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Question {
@@ -14,9 +14,20 @@ interface QuizModalProps {
   snippetTitle: string;
   onComplete: (score: number) => void;
   onClose: () => void;
+  onReturnToSnippet: () => void;
+  onNextSnippet: () => void;
+  hasNextSnippet: boolean;
 }
 
-export default function QuizModal({ questions, snippetTitle, onComplete, onClose }: QuizModalProps) {
+export default function QuizModal({ 
+  questions, 
+  snippetTitle, 
+  onComplete, 
+  onClose, 
+  onReturnToSnippet,
+  onNextSnippet,
+  hasNextSnippet 
+}: QuizModalProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
@@ -25,22 +36,21 @@ export default function QuizModal({ questions, snippetTitle, onComplete, onClose
   const [attemptsOnCurrent, setAttemptsOnCurrent] = useState(0);
 
   const question = questions[currentQuestion];
+  const isLastQuestion = currentQuestion === questions.length - 1;
 
   const handleAnswer = (index: number) => {
-    if (isCorrect) return; // Already answered correctly
+    if (isCorrect) return;
     
     setSelectedAnswer(index);
     const correct = index === question.correctIndex;
     
     if (correct) {
       setIsCorrect(true);
-      // Score based on attempts: first try = 10pts, second = 5pts, third+ = 2pts
       const points = attemptsOnCurrent === 0 ? 10 : attemptsOnCurrent === 1 ? 5 : 2;
       setScore(prev => prev + points);
     } else {
       setIsCorrect(false);
       setAttemptsOnCurrent(prev => prev + 1);
-      // Reset after brief delay for "try again"
       setTimeout(() => {
         setSelectedAnswer(null);
         setIsCorrect(null);
@@ -49,14 +59,14 @@ export default function QuizModal({ questions, snippetTitle, onComplete, onClose
   };
 
   const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
+    if (isLastQuestion) {
+      setIsCompleted(true);
+      onComplete(score);
+    } else {
       setCurrentQuestion(prev => prev + 1);
       setSelectedAnswer(null);
       setIsCorrect(null);
       setAttemptsOnCurrent(0);
-    } else {
-      setIsCompleted(true);
-      onComplete(score);
     }
   };
 
@@ -65,34 +75,43 @@ export default function QuizModal({ questions, snippetTitle, onComplete, onClose
     const percentage = Math.round((score / maxScore) * 100);
     
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm animate-fade-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background animate-fade-in">
         <div className="w-full max-w-md mx-5 text-center">
-          {/* Success Animation */}
+          {/* Success Icon */}
           <div className="relative mb-8">
-            <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-primary/30 to-accent flex items-center justify-center animate-scale-in">
-              <Trophy size={48} className="text-primary" />
+            <div className="w-20 h-20 mx-auto rounded-2xl bg-primary/15 flex items-center justify-center">
+              <Trophy size={40} className="text-primary" />
             </div>
-            <Sparkles className="absolute top-0 right-1/4 text-primary animate-pulse" size={20} />
-            <Sparkles className="absolute bottom-0 left-1/4 text-accent-foreground animate-pulse" size={16} />
           </div>
 
-          <h2 className="text-2xl font-bold text-foreground mb-2">Snippet Completed!</h2>
-          <p className="text-muted-foreground mb-6">"{snippetTitle}"</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">Snippet Completed</h2>
+          <p className="text-muted-foreground mb-8">"{snippetTitle}"</p>
 
           {/* Score Display */}
-          <div className="learning-card mb-8 py-6">
+          <div className="rounded-2xl bg-card border border-border/50 p-6 mb-8">
             <p className="text-sm text-muted-foreground mb-2">Your Score</p>
             <p className="text-4xl font-bold text-primary mb-1">{score} pts</p>
             <p className="text-sm text-muted-foreground">{percentage}% accuracy</p>
           </div>
 
-          <button
-            onClick={onClose}
-            className="quiz-button"
-          >
-            <span>Continue Learning</span>
-            <ArrowRight size={18} />
-          </button>
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            {hasNextSnippet && (
+              <button
+                onClick={onNextSnippet}
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+              >
+                <span>Next Snippet</span>
+                <ArrowRight size={18} />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-foreground bg-secondary hover:bg-secondary/80 transition-colors"
+            >
+              <span>Return to Feed</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -103,7 +122,13 @@ export default function QuizModal({ questions, snippetTitle, onComplete, onClose
       {/* Header */}
       <div className="px-5 pt-6 pb-4 border-b border-border/50">
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs text-muted-foreground uppercase tracking-wide">Quick Quiz</span>
+          <button
+            onClick={onReturnToSnippet}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft size={16} />
+            <span>Back to reading</span>
+          </button>
           <span className="text-xs text-muted-foreground">
             {currentQuestion + 1} of {questions.length}
           </span>
@@ -133,10 +158,10 @@ export default function QuizModal({ questions, snippetTitle, onComplete, onClose
               className={cn(
                 "w-full p-4 rounded-xl text-left font-medium transition-all duration-300 border-2",
                 selectedAnswer === idx && isCorrect === true
-                  ? "bg-green-500/20 border-green-500 text-foreground"
+                  ? "bg-green-500/15 border-green-500 text-foreground"
                   : selectedAnswer === idx && isCorrect === false
-                  ? "bg-destructive/20 border-destructive text-foreground animate-shake"
-                  : "bg-card border-border/50 text-foreground hover:border-primary/50"
+                  ? "bg-destructive/15 border-destructive text-foreground animate-shake"
+                  : "bg-card border-border hover:border-primary/50"
               )}
             >
               <div className="flex items-center justify-between">
@@ -173,11 +198,14 @@ export default function QuizModal({ questions, snippetTitle, onComplete, onClose
         )}
       </div>
 
-      {/* Continue Button */}
+      {/* Next/Finish Button */}
       {isCorrect === true && (
         <div className="px-5 pb-8">
-          <button onClick={handleNext} className="quiz-button animate-fade-in">
-            <span>{currentQuestion < questions.length - 1 ? "Next Question" : "See Results"}</span>
+          <button 
+            onClick={handleNext} 
+            className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors animate-fade-in"
+          >
+            <span>{isLastQuestion ? "Finish Quiz" : "Next Question"}</span>
             <ArrowRight size={18} />
           </button>
         </div>

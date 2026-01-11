@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Calendar, ChevronLeft, ChevronRight, HelpCircle, BookOpen, Clock, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Calendar, ChevronLeft, ChevronRight, HelpCircle, BookOpen, Clock, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, addDays, subDays, isToday } from "date-fns";
 
@@ -9,6 +9,11 @@ interface DailyContent {
     topic: string;
     questions: number;
     duration: string;
+  };
+  vocab: {
+    term: string;
+    meaning: string;
+    example: string;
   };
   longRead: {
     type: "biography" | "case-study";
@@ -20,12 +25,37 @@ interface DailyContent {
 }
 
 const dailyContent: Record<string, DailyContent> = {
+  "2026-01-11": {
+    quiz: {
+      title: "Cognitive Biases",
+      topic: "Psychology",
+      questions: 5,
+      duration: "3 min",
+    },
+    vocab: {
+      term: "Sunk Cost Fallacy",
+      meaning: "The tendency to continue investing in something because of previously invested resources, rather than evaluating its current value.",
+      example: "Staying in a bad movie because you paid for the ticket, even though leaving would make you happier.",
+    },
+    longRead: {
+      type: "biography",
+      title: "The Contrarian Thinker",
+      subject: "Charlie Munger",
+      duration: "18 min read",
+      preview: "How inversion thinking and mental models shaped one of the greatest investment minds of our time.",
+    },
+  },
   "2026-01-10": {
     quiz: {
       title: "Critical Thinking Basics",
       topic: "Thinking Tools",
       questions: 5,
       duration: "2-3 min",
+    },
+    vocab: {
+      term: "First Principles",
+      meaning: "A foundational proposition or assumption that cannot be deduced from any other proposition or assumption.",
+      example: "Instead of asking 'How can I make a cheaper battery?', ask 'What are batteries made of and what do those materials actually cost?'",
     },
     longRead: {
       type: "biography",
@@ -42,6 +72,11 @@ const dailyContent: Record<string, DailyContent> = {
       questions: 6,
       duration: "3 min",
     },
+    vocab: {
+      term: "Compound Interest",
+      meaning: "Interest calculated on the initial principal and also on the accumulated interest from previous periods.",
+      example: "$1,000 at 10% annual interest becomes $1,100 after year one, then $1,210 after year two.",
+    },
     longRead: {
       type: "case-study",
       title: "The Pivot That Saved Slack",
@@ -50,27 +85,20 @@ const dailyContent: Record<string, DailyContent> = {
       preview: "How a failed video game company became a $27 billion communication platform by listening to their own pain points.",
     },
   },
-  "2026-01-08": {
-    quiz: {
-      title: "Psychology of Habits",
-      topic: "Psychology",
-      questions: 5,
-      duration: "2-3 min",
-    },
-    longRead: {
-      type: "biography",
-      title: "The Investor's Mind",
-      subject: "Warren Buffett",
-      duration: "20 min read",
-      preview: "Lessons from decades of patient, principled investing and the philosophy behind building lasting wealth.",
-    },
-  },
 };
 
 export default function DailyPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const dateKey = format(selectedDate, "yyyy-MM-dd");
   const content = dailyContent[dateKey];
+
+  // Mark Daily as visited today
+  useEffect(() => {
+    const today = format(new Date(), "yyyy-MM-dd");
+    localStorage.setItem("swifted-daily-visited", today);
+    // Dispatch event to update badge
+    window.dispatchEvent(new Event("dailyVisited"));
+  }, []);
 
   const goToPreviousDay = () => {
     setSelectedDate((prev) => subDays(prev, 1));
@@ -93,12 +121,12 @@ export default function DailyPage() {
           Daily Learning
         </h1>
         <p className="text-muted-foreground text-sm">
-          One quiz. One deep read. Every day.
+          Quiz, vocab, and deep reading.
         </p>
       </header>
 
       {/* Date Selector */}
-      <div className="flex items-center justify-between mb-8 p-4 rounded-2xl bg-card border border-border/50 animate-fade-in">
+      <div className="flex items-center justify-between mb-6 p-4 rounded-2xl bg-card border border-border/50 animate-fade-in">
         <button
           onClick={goToPreviousDay}
           className="p-2 rounded-xl hover:bg-secondary transition-colors"
@@ -113,7 +141,7 @@ export default function DailyPage() {
               {isToday(selectedDate) ? "Today" : format(selectedDate, "EEEE")}
             </p>
             <p className="text-xs text-muted-foreground">
-              {format(selectedDate, "MMMM d, yyyy")}
+              {format(selectedDate, "MMM d, yyyy")}
             </p>
           </div>
         </div>
@@ -131,15 +159,17 @@ export default function DailyPage() {
       </div>
 
       {content ? (
-        <div className="space-y-5">
+        <div className="space-y-4">
           {/* Daily Quiz Card */}
           <section 
-            className="learning-card animate-slide-up"
+            className="rounded-2xl bg-card border border-border/50 p-5 animate-slide-up"
             style={{ animationDelay: "100ms" }}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <span className="tag mb-3 inline-block">{content.quiz.topic}</span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-primary/15 text-primary mb-2">
+                  {content.quiz.topic}
+                </span>
                 <h2 className="text-lg font-bold text-foreground">
                   Daily Quiz
                 </h2>
@@ -150,27 +180,49 @@ export default function DailyPage() {
               </div>
             </div>
 
-            <h3 className="text-base font-semibold text-secondary-foreground mb-2">
-              {content.quiz.title}
-            </h3>
-            <p className="text-sm text-muted-foreground mb-5">
-              {content.quiz.questions} questions to test your understanding
+            <p className="text-sm text-muted-foreground mb-4">
+              {content.quiz.title} - {content.quiz.questions} questions
             </p>
 
-            <button className="quiz-button">
+            <button className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors">
               <HelpCircle size={18} />
               <span>Start Quiz</span>
             </button>
           </section>
 
+          {/* Daily Vocab Card */}
+          <section 
+            className="rounded-2xl bg-card border border-border/50 p-5 animate-slide-up"
+            style={{ animationDelay: "150ms" }}
+          >
+            <div className="flex items-start justify-between mb-4">
+              <h2 className="text-lg font-bold text-foreground">
+                Daily Vocab
+              </h2>
+              <Bookmark size={18} className="text-muted-foreground" />
+            </div>
+
+            <h3 className="text-base font-semibold text-primary mb-2">
+              {content.vocab.term}
+            </h3>
+            <p className="text-sm text-secondary-foreground mb-3 leading-relaxed">
+              {content.vocab.meaning}
+            </p>
+            <div className="p-3 rounded-xl bg-secondary/50 border border-border/30">
+              <p className="text-xs text-muted-foreground italic">
+                "{content.vocab.example}"
+              </p>
+            </div>
+          </section>
+
           {/* Daily Long Read Card */}
           <section 
-            className="learning-card animate-slide-up"
+            className="rounded-2xl bg-card border border-border/50 p-5 animate-slide-up"
             style={{ animationDelay: "200ms" }}
           >
             <div className="flex items-start justify-between mb-4">
               <div>
-                <span className="tag mb-3 inline-block">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-medium bg-secondary text-secondary-foreground mb-2">
                   {content.longRead.type === "biography" ? "Biography" : "Case Study"}
                 </span>
                 <h2 className="text-lg font-bold text-foreground">
@@ -186,17 +238,14 @@ export default function DailyPage() {
             <h3 className="text-base font-semibold text-secondary-foreground mb-1">
               {content.longRead.title}
             </h3>
-            <div className="flex items-center gap-2 mb-3">
-              <User size={14} className="text-primary" />
-              <span className="text-sm text-primary font-medium">
-                {content.longRead.subject}
-              </span>
-            </div>
-            <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+            <p className="text-sm text-primary font-medium mb-3">
+              {content.longRead.subject}
+            </p>
+            <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
               {content.longRead.preview}
             </p>
 
-            <button className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-foreground bg-secondary hover:bg-secondary/80 transition-colors">
+            <button className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold text-foreground bg-secondary hover:bg-secondary/80 transition-colors">
               <BookOpen size={18} />
               <span>Start Reading</span>
             </button>
@@ -204,7 +253,7 @@ export default function DailyPage() {
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
-          <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-secondary flex items-center justify-center mb-4">
             <Calendar size={28} className="text-muted-foreground" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">

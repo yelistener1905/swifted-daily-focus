@@ -174,8 +174,8 @@ export default function HomePage() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   const snippet = snippets[currentIndex];
+  const hasNextSnippet = currentIndex < snippets.length - 1;
 
-  // Reset scroll to top when snippet changes
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: "instant" });
@@ -191,41 +191,29 @@ export default function HomePage() {
   };
 
   const handleQuizComplete = (score: number) => {
-    // Update stats in localStorage
     const savedStats = localStorage.getItem("swifted-stats");
     const stats = savedStats ? JSON.parse(savedStats) : {
       snippetsCompleted: 0,
       totalPoints: 0,
-      currentStreak: 0,
-      bestStreak: 0,
     };
-
-    const today = new Date().toDateString();
-    const lastActive = localStorage.getItem("swifted-last-active");
-    const yesterday = new Date(Date.now() - 86400000).toDateString();
-
-    // Update streak
-    if (lastActive === yesterday) {
-      stats.currentStreak += 1;
-    } else if (lastActive !== today) {
-      stats.currentStreak = 1;
-    }
-    
-    if (stats.currentStreak > stats.bestStreak) {
-      stats.bestStreak = stats.currentStreak;
-    }
 
     stats.snippetsCompleted += 1;
     stats.totalPoints += score;
 
     localStorage.setItem("swifted-stats", JSON.stringify(stats));
-    localStorage.setItem("swifted-last-active", today);
   };
 
   const handleQuizClose = () => {
     setShowQuiz(false);
-    // Move to next snippet if available
-    if (currentIndex < snippets.length - 1) {
+  };
+
+  const handleReturnToSnippet = () => {
+    setShowQuiz(false);
+  };
+
+  const handleNextSnippet = () => {
+    setShowQuiz(false);
+    if (hasNextSnippet) {
       setCurrentIndex(prev => prev + 1);
     }
   };
@@ -237,17 +225,19 @@ export default function HomePage() {
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
           <article className="animate-fade-in" key={currentIndex}>
             {/* Hero Image */}
-            <div className="relative h-48 sm:h-56 overflow-hidden">
+            <div className="relative h-56 overflow-hidden">
               <img
                 src={snippet.image}
                 alt={snippet.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
               
-              {/* Topic Tag on Image */}
+              {/* Topic Tag */}
               <div className="absolute bottom-4 left-5">
-                <span className="tag">{snippet.topic}</span>
+                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary/20 text-primary backdrop-blur-sm">
+                  {snippet.topic}
+                </span>
               </div>
             </div>
 
@@ -259,7 +249,7 @@ export default function HomePage() {
               </h1>
 
               {/* Main Content */}
-              <div className="prose prose-invert max-w-none mb-6">
+              <div className="mb-6">
                 {snippet.content.split('\n\n').map((paragraph, idx) => (
                   <p key={idx} className="text-[15px] text-secondary-foreground leading-relaxed mb-4">
                     {paragraph}
@@ -281,7 +271,10 @@ export default function HomePage() {
               </div>
 
               {/* Quiz Button */}
-              <button className="quiz-button" onClick={() => setShowQuiz(true)}>
+              <button 
+                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                onClick={() => setShowQuiz(true)}
+              >
                 <HelpCircle size={18} />
                 <span>Take Quick Quiz</span>
               </button>
@@ -290,7 +283,7 @@ export default function HomePage() {
         </div>
 
         {/* Navigation Bar */}
-        <div className="sticky bottom-0 flex items-center justify-between px-5 py-4 bg-background/95 backdrop-blur-sm border-t border-border/50">
+        <div className="flex items-center justify-between px-5 py-4 bg-card/95 backdrop-blur-sm border-t border-border/50">
           <button
             onClick={goToPrevious}
             disabled={currentIndex === 0}
@@ -311,8 +304,8 @@ export default function HomePage() {
               <div
                 key={idx}
                 className={cn(
-                  "w-1.5 h-1.5 rounded-full transition-all",
-                  idx === currentIndex ? "bg-primary w-4" : "bg-muted-foreground/30"
+                  "h-1.5 rounded-full transition-all",
+                  idx === currentIndex ? "bg-primary w-5" : "bg-muted w-1.5"
                 )}
               />
             ))}
@@ -341,6 +334,9 @@ export default function HomePage() {
           snippetTitle={snippet.title}
           onComplete={handleQuizComplete}
           onClose={handleQuizClose}
+          onReturnToSnippet={handleReturnToSnippet}
+          onNextSnippet={handleNextSnippet}
+          hasNextSnippet={hasNextSnippet}
         />
       )}
     </>
