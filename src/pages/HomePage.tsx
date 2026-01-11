@@ -7,7 +7,7 @@ const snippets = [
   {
     topic: "Psychology",
     title: "Why We Procrastinate",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=1200&h=600&fit=crop",
     content: `Procrastination isn't about laziness—it's emotional regulation. When a task feels threatening (boring, hard, or tied to self-worth), your brain prioritizes short-term mood repair over long-term goals. The amygdala hijacks your prefrontal cortex, making "later" feel safer than "now."
 
 This is why willpower alone rarely works. The real solution involves reducing the emotional threat of the task. Break it into smaller pieces. Remove friction. Create a starting ritual. The goal isn't motivation—it's making the first step so small that your brain doesn't register it as threatening.
@@ -225,17 +225,18 @@ export default function HomePage() {
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
           <article className="animate-fade-in" key={currentIndex}>
             {/* Hero Image */}
-            <div className="relative h-56 overflow-hidden">
+            <div className="relative w-full" style={{ height: '40vh', minHeight: '240px', maxHeight: '320px' }}>
               <img
                 src={snippet.image}
                 alt={snippet.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
+              {/* Dark gradient overlay for readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/20" />
               
               {/* Topic Tag */}
-              <div className="absolute bottom-4 left-5">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-primary/20 text-primary backdrop-blur-sm">
+              <div className="absolute bottom-5 left-5">
+                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-background/80 text-primary backdrop-blur-sm border border-border/50">
                   {snippet.topic}
                 </span>
               </div>
