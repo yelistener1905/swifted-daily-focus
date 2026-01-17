@@ -1,7 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, HelpCircle, Lightbulb } from "lucide-react";
+import { ChevronLeft, ChevronRight, HelpCircle, Lightbulb, Bookmark, Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuizModal from "@/components/learning/QuizModal";
+import { useBookmarks } from "@/hooks/useBookmarks";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { TextToSpeechControls } from "@/components/snippets/TextToSpeechControls";
 
 const snippets = [
   {
@@ -171,15 +174,23 @@ The technique works across domains. In personal finance, instead of accepting "y
 export default function HomePage() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showQuiz, setShowQuiz] = useState(false);
+  const [showTTS, setShowTTS] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const tts = useTextToSpeech();
   
   const snippet = snippets[currentIndex];
   const hasNextSnippet = currentIndex < snippets.length - 1;
+  const isCurrentBookmarked = isBookmarked(snippet.topic, snippet.title);
 
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, behavior: "instant" });
     }
+    // Stop TTS when switching snippets
+    tts.stop();
+    setShowTTS(false);
   }, [currentIndex]);
 
   const goToPrevious = () => {
@@ -218,6 +229,30 @@ export default function HomePage() {
     }
   };
 
+  const handleBookmarkToggle = () => {
+    toggleBookmark({
+      topic: snippet.topic,
+      title: snippet.title,
+      image: snippet.image,
+      content: snippet.content,
+      example: snippet.example,
+    });
+  };
+
+  const handleTTSToggle = () => {
+    if (showTTS) {
+      tts.stop();
+      setShowTTS(false);
+    } else {
+      setShowTTS(true);
+    }
+  };
+
+  const handleTTSPlay = () => {
+    const fullText = `${snippet.title}. ${snippet.content} Example: ${snippet.example}`;
+    tts.speak(fullText);
+  };
+
   return (
     <>
       <div className="h-[calc(100svh-4rem)] flex flex-col bg-background">
@@ -225,7 +260,7 @@ export default function HomePage() {
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
           <article className="animate-fade-in" key={currentIndex}>
             {/* Hero Image */}
-            <div className="relative w-full" style={{ height: '40vh', minHeight: '240px', maxHeight: '320px' }}>
+            <div className="relative w-full" style={{ height: '35vh', minHeight: '200px', maxHeight: '280px' }}>
               <img
                 src={snippet.image}
                 alt={snippet.title}
@@ -234,46 +269,94 @@ export default function HomePage() {
               {/* Dark gradient overlay for readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/20" />
               
+              {/* Action Buttons - Top Right */}
+              <div className="absolute top-3 right-3 flex gap-2">
+                <button
+                  onClick={handleBookmarkToggle}
+                  className={cn(
+                    "p-2.5 rounded-xl backdrop-blur-sm border transition-all",
+                    isCurrentBookmarked
+                      ? "bg-primary/20 border-primary/50 text-primary"
+                      : "bg-background/60 border-border/50 text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label={isCurrentBookmarked ? "Remove bookmark" : "Add bookmark"}
+                >
+                  <Bookmark size={18} className={isCurrentBookmarked ? "fill-primary" : ""} />
+                </button>
+                <button
+                  onClick={handleTTSToggle}
+                  className={cn(
+                    "p-2.5 rounded-xl backdrop-blur-sm border transition-all",
+                    showTTS
+                      ? "bg-primary/20 border-primary/50 text-primary"
+                      : "bg-background/60 border-border/50 text-muted-foreground hover:text-foreground"
+                  )}
+                  aria-label="Text to speech"
+                >
+                  <Volume2 size={18} />
+                </button>
+              </div>
+              
               {/* Topic Tag */}
-              <div className="absolute bottom-5 left-5">
-                <span className="inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-semibold bg-background/80 text-primary backdrop-blur-sm border border-border/50">
+              <div className="absolute bottom-4 left-4">
+                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-background/80 text-primary backdrop-blur-sm border border-border/50">
                   {snippet.topic}
                 </span>
               </div>
             </div>
 
             {/* Content */}
-            <div className="px-5 pt-4 pb-6">
+            <div className="px-4 sm:px-5 pt-4 pb-6">
               {/* Title */}
-              <h1 className="text-2xl font-bold text-foreground leading-tight mb-6">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight mb-4 sm:mb-6">
                 {snippet.title}
               </h1>
 
+              {/* TTS Controls */}
+              {showTTS && (
+                <div className="mb-4 animate-fade-in">
+                  <TextToSpeechControls
+                    isPlaying={tts.isPlaying}
+                    isPaused={tts.isPaused}
+                    progress={tts.progress}
+                    volume={tts.volume}
+                    rate={tts.rate}
+                    onPlay={handleTTSPlay}
+                    onPause={tts.pause}
+                    onResume={tts.resume}
+                    onStop={tts.stop}
+                    onVolumeChange={tts.updateVolume}
+                    onRateChange={tts.updateRate}
+                    onSeek={tts.seekTo}
+                  />
+                </div>
+              )}
+
               {/* Main Content */}
-              <div className="mb-6">
+              <div className="mb-5 sm:mb-6">
                 {snippet.content.split('\n\n').map((paragraph, idx) => (
-                  <p key={idx} className="text-[15px] text-secondary-foreground leading-relaxed mb-4">
+                  <p key={idx} className="text-sm sm:text-[15px] text-secondary-foreground leading-relaxed mb-3 sm:mb-4">
                     {paragraph}
                   </p>
                 ))}
               </div>
 
               {/* Example Block */}
-              <div className="example-block mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Lightbulb size={16} className="text-primary" />
+              <div className="example-block mb-5 sm:mb-6">
+                <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                  <Lightbulb size={16} className="text-primary flex-shrink-0" />
                   <span className="text-xs font-semibold text-primary uppercase tracking-wide">
                     Example
                   </span>
                 </div>
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                   {snippet.example}
                 </p>
               </div>
 
               {/* Quiz Button */}
               <button 
-                className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl font-semibold text-primary-foreground bg-primary hover:bg-primary/90 transition-colors text-sm sm:text-base"
                 onClick={() => setShowQuiz(true)}
               >
                 <HelpCircle size={18} />
@@ -284,29 +367,29 @@ export default function HomePage() {
         </div>
 
         {/* Navigation Bar */}
-        <div className="flex items-center justify-between px-5 py-4 bg-card/95 backdrop-blur-sm border-t border-border/50">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3 sm:py-4 bg-card/95 backdrop-blur-sm border-t border-border/50">
           <button
             onClick={goToPrevious}
             disabled={currentIndex === 0}
             className={cn(
-              "flex items-center gap-2 text-sm font-medium transition-all",
+              "flex items-center gap-1 sm:gap-2 text-sm font-medium transition-all",
               currentIndex === 0
                 ? "text-muted-foreground/40 cursor-not-allowed"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
             <ChevronLeft size={18} />
-            <span>Previous</span>
+            <span className="hidden xs:inline">Previous</span>
           </button>
 
           {/* Progress Indicator */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {snippets.map((_, idx) => (
               <div
                 key={idx}
                 className={cn(
                   "h-1.5 rounded-full transition-all",
-                  idx === currentIndex ? "bg-primary w-5" : "bg-muted w-1.5"
+                  idx === currentIndex ? "bg-primary w-4 sm:w-5" : "bg-muted w-1.5"
                 )}
               />
             ))}
@@ -316,13 +399,13 @@ export default function HomePage() {
             onClick={goToNext}
             disabled={currentIndex === snippets.length - 1}
             className={cn(
-              "flex items-center gap-2 text-sm font-medium transition-all",
+              "flex items-center gap-1 sm:gap-2 text-sm font-medium transition-all",
               currentIndex === snippets.length - 1
                 ? "text-muted-foreground/40 cursor-not-allowed"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            <span>Next</span>
+            <span className="hidden xs:inline">Next</span>
             <ChevronRight size={18} />
           </button>
         </div>
