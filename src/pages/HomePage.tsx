@@ -269,33 +269,19 @@ export default function HomePage() {
               {/* Dark gradient overlay for readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/20" />
               
-              {/* Action Buttons - Top Right */}
-              <div className="absolute top-3 right-3 flex gap-2">
-                <button
-                  onClick={handleBookmarkToggle}
-                  className={cn(
-                    "p-2.5 rounded-xl backdrop-blur-sm border transition-all",
-                    isCurrentBookmarked
-                      ? "bg-primary/20 border-primary/50 text-primary"
-                      : "bg-background/60 border-border/50 text-muted-foreground hover:text-foreground"
-                  )}
-                  aria-label={isCurrentBookmarked ? "Remove bookmark" : "Add bookmark"}
-                >
-                  <Bookmark size={18} className={isCurrentBookmarked ? "fill-primary" : ""} />
-                </button>
-                <button
-                  onClick={handleTTSToggle}
-                  className={cn(
-                    "p-2.5 rounded-xl backdrop-blur-sm border transition-all",
-                    showTTS
-                      ? "bg-primary/20 border-primary/50 text-primary"
-                      : "bg-background/60 border-border/50 text-muted-foreground hover:text-foreground"
-                  )}
-                  aria-label="Text to speech"
-                >
-                  <Volume2 size={18} />
-                </button>
-              </div>
+              {/* Bookmark Button - Top Right */}
+              <button
+                onClick={handleBookmarkToggle}
+                className={cn(
+                  "absolute top-3 right-3 p-2.5 rounded-xl backdrop-blur-sm border transition-all",
+                  isCurrentBookmarked
+                    ? "bg-primary/20 border-primary/50 text-primary"
+                    : "bg-background/60 border-border/50 text-muted-foreground hover:text-foreground"
+                )}
+                aria-label={isCurrentBookmarked ? "Remove bookmark" : "Add bookmark"}
+              >
+                <Bookmark size={20} strokeWidth={2.5} className={isCurrentBookmarked ? "fill-primary" : ""} />
+              </button>
               
               {/* Topic Tag */}
               <div className="absolute bottom-4 left-4">
@@ -312,22 +298,32 @@ export default function HomePage() {
                 {snippet.title}
               </h1>
 
+              {/* TTS Toggle Button */}
+              <button
+                onClick={handleTTSToggle}
+                className={cn(
+                  "mb-4 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  showTTS
+                    ? "bg-primary/20 border border-primary/50 text-primary"
+                    : "bg-secondary border border-border text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Volume2 size={18} />
+                <span>{showTTS ? "Hide Reader" : "Listen to Snippet"}</span>
+              </button>
+
               {/* TTS Controls */}
               {showTTS && (
                 <div className="mb-4 animate-fade-in">
                   <TextToSpeechControls
                     isPlaying={tts.isPlaying}
                     isPaused={tts.isPaused}
-                    progress={tts.progress}
-                    volume={tts.volume}
                     rate={tts.rate}
                     onPlay={handleTTSPlay}
                     onPause={tts.pause}
                     onResume={tts.resume}
                     onStop={tts.stop}
-                    onVolumeChange={tts.updateVolume}
                     onRateChange={tts.updateRate}
-                    onSeek={tts.seekTo}
                   />
                 </div>
               )}
