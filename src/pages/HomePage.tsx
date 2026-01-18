@@ -322,7 +322,6 @@ export default function HomePage() {
                     onPlay={handleTTSPlay}
                     onPause={tts.pause}
                     onResume={tts.resume}
-                    onStop={tts.stop}
                     onRateChange={tts.updateRate}
                   />
                 </div>

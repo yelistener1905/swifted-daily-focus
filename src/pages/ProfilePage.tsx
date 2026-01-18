@@ -142,23 +142,23 @@ export default function ProfilePage() {
 
       {/* Saved Snippets Card */}
       <Card 
-        className="mb-4 sm:mb-6 cursor-pointer hover:bg-card/80 transition-colors animate-fade-in"
+        className="mb-4 sm:mb-6 cursor-pointer hover:border-primary/40 transition-all animate-fade-in bg-card border-2 border-border shadow-md"
         onClick={() => setShowBookmarks(true)}
       >
         <CardContent className="p-4 sm:p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-2 sm:p-2.5 rounded-xl bg-secondary">
-                <Bookmark className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
+              <div className="p-2 sm:p-2.5 rounded-xl bg-primary/15 border border-primary/20">
+                <Bookmark className="w-5 h-5 sm:w-6 sm:h-6 text-primary" strokeWidth={2.5} />
               </div>
               <div>
-                <p className="text-sm sm:text-base font-semibold text-foreground">Saved Snippets</p>
+                <p className="text-sm sm:text-base font-bold text-foreground">Saved Snippets</p>
                 <p className="text-xs sm:text-sm text-muted-foreground">
                   {bookmarks.length} {bookmarks.length === 1 ? "snippet" : "snippets"} saved
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-muted-foreground" />
+            <ChevronRight className="w-5 h-5 text-foreground" />
           </div>
         </CardContent>
       </Card>
