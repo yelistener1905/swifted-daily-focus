@@ -1,4 +1,4 @@
-import { Play, Pause, Square } from "lucide-react";
+import { Play, Pause } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TextToSpeechControlsProps {
@@ -8,7 +8,6 @@ interface TextToSpeechControlsProps {
   onPlay: () => void;
   onPause: () => void;
   onResume: () => void;
-  onStop: () => void;
   onRateChange: (value: number) => void;
 }
 
@@ -19,7 +18,6 @@ export function TextToSpeechControls({
   onPlay,
   onPause,
   onResume,
-  onStop,
   onRateChange,
 }: TextToSpeechControlsProps) {
   return (
@@ -53,23 +51,13 @@ export function TextToSpeechControls({
               <Pause size={18} />
             </button>
           )}
-          
-          {isPlaying && (
-            <button
-              onClick={onStop}
-              className="p-2 rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80 transition-colors"
-              aria-label="Stop"
-            >
-              <Square size={16} />
-            </button>
-          )}
         </div>
 
         {/* Speed Control */}
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Speed</span>
           <div className="flex gap-1">
-            {[0.75, 1, 1.25, 1.5].map((r) => (
+            {[0.75, 1, 1.5].map((r) => (
               <button
                 key={r}
                 onClick={() => onRateChange(r)}
