@@ -275,12 +275,12 @@ export default function HomePage() {
                 className={cn(
                   "absolute top-3 right-3 p-2.5 rounded-xl backdrop-blur-sm border transition-all",
                   isCurrentBookmarked
-                    ? "bg-primary/20 border-primary/50 text-primary"
-                    : "bg-background/60 border-border/50 text-muted-foreground hover:text-foreground"
+                    ? "bg-green-600/90 border-green-500 text-white"
+                    : "bg-red-800/90 border-red-700 text-white hover:bg-red-700"
                 )}
                 aria-label={isCurrentBookmarked ? "Remove bookmark" : "Add bookmark"}
               >
-                <Bookmark size={20} strokeWidth={2.5} className={isCurrentBookmarked ? "fill-primary" : ""} />
+                <Bookmark size={20} strokeWidth={2.5} className={isCurrentBookmarked ? "fill-white" : ""} />
               </button>
               
               {/* Topic Tag */}
