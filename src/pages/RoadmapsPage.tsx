@@ -176,7 +176,24 @@ export default function RoadmapsPage() {
                         </div>
                         <Progress value={progress} className="h-1.5" />
                       </div>
-                      <Button size="sm" className="mt-3 w-full text-xs sm:text-sm">
+                      <Button
+                        size="sm"
+                        className="mt-3 w-full text-xs sm:text-sm"
+                        onClick={() => {
+                          // Persist the user's place so the main page can show "Pick up where you left off"
+                          // We don't have a unit list yet, so we derive a reasonable "next" unit label.
+                          const nextUnitIndex = Math.min(
+                            roadmap.completedLessons,
+                            Math.max(0, roadmap.lessonsCount - 1)
+                          );
+                          updateLastActiveRoadmap(
+                            selectedCategory,
+                            index,
+                            nextUnitIndex,
+                            `Lesson ${nextUnitIndex + 1}`
+                          );
+                        }}
+                      >
                         {roadmap.completedLessons > 0 ? "Continue" : "Start Learning"}
                       </Button>
                     </CardContent>
@@ -246,48 +263,71 @@ export default function RoadmapsPage() {
         />
       </div>
 
-      {/* Continue Where You Left Off */}
-      {continueRoadmap && (
-        <Card className="mb-5 overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/20 border-primary/30">
-          <CardContent className="p-4 sm:p-5">
-            <div className="flex items-start gap-4">
-              <div className="p-3 rounded-xl bg-primary/20">
-                <Play className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1">
-                <span className="text-xs text-primary font-medium">Pick up where you left off</span>
-                <h3 className="font-semibold text-foreground mt-1">
-                  {continueRoadmap.roadmap.title}
-                </h3>
+      {/* Pick up where you left off */}
+      <Card className="mb-5 overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/20 border-primary/30">
+        <CardContent className="p-4 sm:p-5">
+          <div className="flex items-start gap-4">
+            <div className="p-3 rounded-xl bg-primary/20">
+              <Play className="w-5 h-5 text-primary" />
+            </div>
+
+            <div className="flex-1">
+              <span className="text-xs text-primary font-medium">Pick up where you left off</span>
+
+              {continueRoadmap ? (
+                <>
+                  <h3 className="font-semibold text-foreground mt-1">
+                    {continueRoadmap.roadmap.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                    Unit {continueRoadmap.unitIndex + 1} – {continueRoadmap.unitTitle}
+                  </p>
+                  <div className="mt-3">
+                    <Progress
+                      value={(continueRoadmap.roadmap.completedLessons / continueRoadmap.roadmap.lessonsCount) * 100}
+                      className="h-1.5"
+                    />
+                    <span className="text-[10px] text-muted-foreground mt-1 inline-block">
+                      {continueRoadmap.roadmap.completedLessons}/{continueRoadmap.roadmap.lessonsCount} lessons
+                    </span>
+                  </div>
+                </>
+              ) : (
                 <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Unit {continueRoadmap.unitIndex + 1} – {continueRoadmap.unitTitle}
+                  Start any course and we’ll keep your next unit ready here.
                 </p>
-                <div className="mt-3">
-                  <Progress 
-                    value={(continueRoadmap.roadmap.completedLessons / continueRoadmap.roadmap.lessonsCount) * 100} 
-                    className="h-1.5" 
-                  />
-                  <span className="text-[10px] text-muted-foreground mt-1 inline-block">
-                    {continueRoadmap.roadmap.completedLessons}/{continueRoadmap.roadmap.lessonsCount} lessons
-                  </span>
-                </div>
-              </div>
-              <Button 
-                size="sm" 
+              )}
+            </div>
+
+            {continueRoadmap ? (
+              <Button
+                size="sm"
                 className="shrink-0"
                 onClick={() => setSelectedCategory(continueRoadmap.categoryId)}
               >
                 Continue
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            ) : (
+              <Button
+                size="sm"
+                className="shrink-0"
+                onClick={() => {
+                  document
+                    .getElementById("roadmap-categories")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                Browse
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {filteredCategories.length === 0 ? (
         <p className="text-sm text-muted-foreground py-4 text-center">No categories found</p>
       ) : (
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+        <div id="roadmap-categories" className="grid grid-cols-2 gap-2 sm:gap-3">
           {filteredCategories.map((category) => {
             const Icon = category.icon;
             return (
