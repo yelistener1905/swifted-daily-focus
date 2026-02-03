@@ -86,9 +86,10 @@ const snippetsByCategory: Record<string, Array<{ title: string; topic: string; p
 export default function RoadmapsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [mainSearchQuery, setMainSearchQuery] = useState("");
   const { lastActiveRoadmap, updateLastActiveRoadmap, completeSnippet } = useStreaks();
 
-  // Filter roadmaps and snippets based on search
+  // Filter roadmaps and snippets based on search (for category detail view)
   const filteredData = useMemo(() => {
     if (!selectedCategory) return { roadmaps: [], snippets: [] };
     
@@ -111,6 +112,13 @@ export default function RoadmapsPage() {
       ),
     };
   }, [selectedCategory, searchQuery]);
+
+  // Filter categories based on search (for main page)
+  const filteredCategories = useMemo(() => {
+    if (!mainSearchQuery.trim()) return categories;
+    const query = mainSearchQuery.toLowerCase();
+    return categories.filter(c => c.title.toLowerCase().includes(query));
+  }, [mainSearchQuery]);
 
   if (selectedCategory) {
     const category = categories.find((c) => c.id === selectedCategory);
@@ -218,15 +226,6 @@ export default function RoadmapsPage() {
   };
 
   const continueRoadmap = getContinueRoadmap();
-
-  // Filter categories based on search on main page
-  const [mainSearchQuery, setMainSearchQuery] = useState("");
-  
-  const filteredCategories = useMemo(() => {
-    if (!mainSearchQuery.trim()) return categories;
-    const query = mainSearchQuery.toLowerCase();
-    return categories.filter(c => c.title.toLowerCase().includes(query));
-  }, [mainSearchQuery]);
 
   return (
     <div className="px-4 sm:px-5 pt-6 sm:pt-8 pb-6 animate-fade-in">
