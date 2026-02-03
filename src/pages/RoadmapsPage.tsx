@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
-import { ArrowLeft, Beaker, Cpu, DollarSign, MessageCircle, Heart, Lightbulb, ChevronRight, Search, BookOpen } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { ArrowLeft, Beaker, Cpu, DollarSign, MessageCircle, Heart, Lightbulb, ChevronRight, Search, BookOpen, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useStreaks } from "@/hooks/useStreaks";
 
 const categories = [
   { id: "science", title: "Science & Nature", icon: Beaker, color: "from-violet-500/20 to-purple-500/20" },
@@ -85,6 +86,7 @@ const snippetsByCategory: Record<string, Array<{ title: string; topic: string; p
 export default function RoadmapsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const { lastActiveRoadmap, updateLastActiveRoadmap, completeSnippet } = useStreaks();
 
   // Filter roadmaps and snippets based on search
   const filteredData = useMemo(() => {
@@ -206,12 +208,61 @@ export default function RoadmapsPage() {
     );
   }
 
+  // Get the continue roadmap info
+  const getContinueRoadmap = () => {
+    if (!lastActiveRoadmap) return null;
+    const category = categories.find(c => c.id === lastActiveRoadmap.categoryId);
+    const roadmap = roadmapsByCategory[lastActiveRoadmap.categoryId]?.[lastActiveRoadmap.roadmapIndex];
+    if (!category || !roadmap) return null;
+    return { category, roadmap, ...lastActiveRoadmap };
+  };
+
+  const continueRoadmap = getContinueRoadmap();
+
   return (
     <div className="px-4 sm:px-5 pt-6 sm:pt-8 pb-6 animate-fade-in">
       <header className="mb-6 sm:mb-8">
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Learning Paths</h1>
         <p className="text-muted-foreground text-xs sm:text-sm mt-1">Choose a category to explore</p>
       </header>
+
+      {/* Continue Where You Left Off */}
+      {continueRoadmap && (
+        <Card className="mb-5 overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/20 border-primary/30">
+          <CardContent className="p-4 sm:p-5">
+            <div className="flex items-start gap-4">
+              <div className="p-3 rounded-xl bg-primary/20">
+                <Play className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1">
+                <span className="text-xs text-primary font-medium">Pick up where you left off</span>
+                <h3 className="font-semibold text-foreground mt-1">
+                  {continueRoadmap.roadmap.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  Unit {continueRoadmap.unitIndex + 1} – {continueRoadmap.unitTitle}
+                </p>
+                <div className="mt-3">
+                  <Progress 
+                    value={(continueRoadmap.roadmap.completedLessons / continueRoadmap.roadmap.lessonsCount) * 100} 
+                    className="h-1.5" 
+                  />
+                  <span className="text-[10px] text-muted-foreground mt-1 inline-block">
+                    {continueRoadmap.roadmap.completedLessons}/{continueRoadmap.roadmap.lessonsCount} lessons
+                  </span>
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                className="shrink-0"
+                onClick={() => setSelectedCategory(continueRoadmap.categoryId)}
+              >
+                Continue
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 gap-2 sm:gap-3">
         {categories.map((category) => {

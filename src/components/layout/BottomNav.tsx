@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { Home, Compass, Calendar, Map, User } from "lucide-react";
+import { Home, Flame, Calendar, Map, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 
 const navItems = [
   { icon: Home, label: "Home", path: "/" },
-  { icon: Compass, label: "Explore", path: "/explore" },
+  { icon: Flame, label: "Streaks", path: "/streaks" },
   { icon: Calendar, label: "Daily", path: "/daily" },
   { icon: Map, label: "Roadmaps", path: "/roadmaps" },
   { icon: User, label: "Profile", path: "/profile" },
