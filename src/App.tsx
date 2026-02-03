@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "@/components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
-import ExplorePage from "./pages/ExplorePage";
+import StreaksPage from "./pages/StreaksPage";
 import DailyPage from "./pages/DailyPage";
 import RoadmapsPage from "./pages/RoadmapsPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -46,7 +46,7 @@ const App = () => {
           <AppLayout>
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/explore" element={<ExplorePage />} />
+              <Route path="/streaks" element={<StreaksPage />} />
               <Route path="/daily" element={<DailyPage />} />
               <Route path="/roadmaps" element={<RoadmapsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
