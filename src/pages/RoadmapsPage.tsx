@@ -219,12 +219,33 @@ export default function RoadmapsPage() {
 
   const continueRoadmap = getContinueRoadmap();
 
+  // Filter categories based on search on main page
+  const [mainSearchQuery, setMainSearchQuery] = useState("");
+  
+  const filteredCategories = useMemo(() => {
+    if (!mainSearchQuery.trim()) return categories;
+    const query = mainSearchQuery.toLowerCase();
+    return categories.filter(c => c.title.toLowerCase().includes(query));
+  }, [mainSearchQuery]);
+
   return (
     <div className="px-4 sm:px-5 pt-6 sm:pt-8 pb-6 animate-fade-in">
-      <header className="mb-6 sm:mb-8">
+      <header className="mb-4 sm:mb-5">
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Learning Paths</h1>
         <p className="text-muted-foreground text-xs sm:text-sm mt-1">Choose a category to explore</p>
       </header>
+
+      {/* Search Bar */}
+      <div className="relative mb-4">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search categories..."
+          value={mainSearchQuery}
+          onChange={(e) => setMainSearchQuery(e.target.value)}
+          className="pl-10 bg-secondary/50 border-border"
+        />
+      </div>
 
       {/* Continue Where You Left Off */}
       {continueRoadmap && (
@@ -264,28 +285,32 @@ export default function RoadmapsPage() {
         </Card>
       )}
 
-      <div className="grid grid-cols-2 gap-2 sm:gap-3">
-        {categories.map((category) => {
-          const Icon = category.icon;
-          return (
-            <Card
-              key={category.id}
-              className={cn(
-                "cursor-pointer hover:border-primary/50 transition-all duration-200 overflow-hidden group"
-              )}
-              onClick={() => setSelectedCategory(category.id)}
-            >
-              <CardContent className={cn("p-3 sm:p-4 bg-gradient-to-br", category.color)}>
-                <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-2 sm:mb-3" />
-                <h3 className="font-medium text-foreground text-xs sm:text-sm group-hover:text-primary transition-colors">
-                  {category.title}
-                </h3>
-                <ChevronRight className="w-4 h-4 text-muted-foreground mt-1 sm:mt-2 group-hover:text-primary transition-colors" />
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {filteredCategories.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4 text-center">No categories found</p>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 sm:gap-3">
+          {filteredCategories.map((category) => {
+            const Icon = category.icon;
+            return (
+              <Card
+                key={category.id}
+                className={cn(
+                  "cursor-pointer hover:border-primary/50 transition-all duration-200 overflow-hidden group"
+                )}
+                onClick={() => setSelectedCategory(category.id)}
+              >
+                <CardContent className={cn("p-3 sm:p-4 bg-gradient-to-br", category.color)}>
+                  <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-2 sm:mb-3" />
+                  <h3 className="font-medium text-foreground text-xs sm:text-sm group-hover:text-primary transition-colors">
+                    {category.title}
+                  </h3>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground mt-1 sm:mt-2 group-hover:text-primary transition-colors" />
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
