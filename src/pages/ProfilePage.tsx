@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useBookmarks, BookmarkedSnippet } from "@/hooks/useBookmarks";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function ProfilePage() {
   const [stats, setStats] = useState({
@@ -23,7 +24,6 @@ export default function ProfilePage() {
   const { bookmarks, removeBookmark } = useBookmarks();
 
   useEffect(() => {
-    // Load stats from localStorage
     const savedStats = localStorage.getItem("swifted-stats");
     const streakData = localStorage.getItem("swifted-streak");
     
@@ -32,7 +32,6 @@ export default function ProfilePage() {
       parsedStats = JSON.parse(savedStats);
     }
 
-    // Calculate streak
     let currentStreak = 0;
     let longestStreak = 0;
     let activeDays = 0;
@@ -43,7 +42,6 @@ export default function ProfilePage() {
       longestStreak = streak.longestStreak || 0;
       activeDays = streak.activeDays || 0;
     } else {
-      // Initialize streak tracking
       const today = format(new Date(), "yyyy-MM-dd");
       const dailyVisited = localStorage.getItem("swifted-daily-visited");
       if (dailyVisited === today) {
@@ -53,7 +51,6 @@ export default function ProfilePage() {
       }
     }
 
-    // Map old stats to new meaningful metrics
     const snippets = parsedStats.snippetsCompleted || 0;
     
     setStats({
@@ -77,113 +74,111 @@ export default function ProfilePage() {
       label: "Concepts Learned", 
       value: stats.conceptsLearned, 
       icon: Brain,
-      color: "text-primary" 
+      color: "text-primary",
+      bgColor: "bg-primary/10"
     },
     { 
       label: "Understanding Verified", 
       value: stats.understandingVerified, 
       icon: CheckCircle2,
-      color: "text-emerald-400" 
+      color: "text-success",
+      bgColor: "bg-success/10"
     },
     { 
       label: "Skills Unlocked", 
       value: stats.skillsUnlocked, 
       icon: Unlock,
-      color: "text-amber-400" 
+      color: "text-warning",
+      bgColor: "bg-warning/10"
     },
     { 
       label: "Time Invested", 
       value: `${stats.timeInvested}m`, 
       icon: Clock,
-      color: "text-blue-400" 
+      color: "text-info",
+      bgColor: "bg-info/10"
     },
   ];
 
   return (
-    <div className="px-4 sm:px-5 pt-6 sm:pt-8 pb-6 min-h-[calc(100svh-4rem)] flex flex-col">
+    <div className="px-5 pt-4 pb-8 min-h-[calc(100svh-4rem)] flex flex-col animate-fade-in">
       {/* User Header */}
-      <header className="mb-6 sm:mb-8 animate-fade-in">
-        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
-          <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/30 flex items-center justify-center border border-primary/20">
-            <span className="text-xl sm:text-2xl font-bold text-primary">S</span>
+      <header className="mb-6">
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+            <span className="text-xl font-bold text-primary">S</span>
           </div>
           <div>
-            <h1 className="text-lg sm:text-xl font-bold text-foreground">Learner</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Learning since Jan 2025</p>
+            <h1 className="text-xl font-semibold text-foreground tracking-tight">Learner</h1>
+            <p className="text-sm text-muted-foreground">Learning since Jan 2025</p>
           </div>
         </div>
       </header>
 
       {/* Streak Card */}
-      <Card className="mb-4 sm:mb-6 overflow-hidden border-primary/20 bg-gradient-to-br from-primary/5 to-accent/10 animate-fade-in">
-        <CardContent className="p-4 sm:p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-2 sm:p-2.5 rounded-xl bg-primary/15">
-                <Flame className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs sm:text-sm text-muted-foreground">Current Streak</p>
-                <p className="text-xl sm:text-2xl font-bold text-foreground">
-                  {stats.currentStreak} {stats.currentStreak === 1 ? "day" : "days"}
-                </p>
-              </div>
+      <div className="mb-4 rounded-2xl bg-gradient-to-br from-warning/10 via-transparent to-rose/10 p-4 border border-warning/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-warning/15 flex items-center justify-center">
+              <Flame className="w-5 h-5 text-warning" />
             </div>
-            <div className="text-right">
-              <p className="text-[10px] sm:text-xs text-muted-foreground">Longest</p>
-              <p className="text-base sm:text-lg font-semibold text-primary">{stats.longestStreak} days</p>
+            <div>
+              <p className="text-sm text-muted-foreground">Current Streak</p>
+              <p className="text-2xl font-bold text-foreground">
+                {stats.currentStreak} {stats.currentStreak === 1 ? "day" : "days"}
+              </p>
             </div>
           </div>
-          <p className="text-[10px] sm:text-xs text-muted-foreground mt-2 sm:mt-3">
-            Keep learning daily to build your streak
-          </p>
-        </CardContent>
-      </Card>
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">Longest</p>
+            <p className="text-lg font-semibold text-warning">{stats.longestStreak} days</p>
+          </div>
+        </div>
+      </div>
 
       {/* Saved Snippets Card */}
       <Card 
-        className="mb-4 sm:mb-6 cursor-pointer hover:border-primary/40 transition-all animate-fade-in bg-card border-2 border-border shadow-md"
+        className="mb-4 cursor-pointer hover:bg-secondary/30 transition-all border-0 bg-secondary/20"
         onClick={() => setShowBookmarks(true)}
       >
-        <CardContent className="p-4 sm:p-5">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-2 sm:p-2.5 rounded-xl bg-primary/15 border border-primary/20">
-                <Bookmark className="w-5 h-5 sm:w-6 sm:h-6 text-primary" strokeWidth={2.5} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose/15 flex items-center justify-center">
+                <Bookmark className="w-5 h-5 text-rose" />
               </div>
               <div>
-                <p className="text-sm sm:text-base font-bold text-foreground">Saved Snippets</p>
-                <p className="text-xs sm:text-sm text-muted-foreground">
+                <p className="font-medium text-foreground">Saved Snippets</p>
+                <p className="text-sm text-muted-foreground">
                   {bookmarks.length} {bookmarks.length === 1 ? "snippet" : "snippets"} saved
                 </p>
               </div>
             </div>
-            <ChevronRight className="w-5 h-5 text-foreground" />
+            <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </div>
         </CardContent>
       </Card>
 
       {/* Learning Snapshot */}
-      <section className="mb-4 sm:mb-6 flex-1">
-        <div className="mb-3 sm:mb-4">
-          <h2 className="text-base sm:text-lg font-semibold text-foreground">Your Learning Snapshot</h2>
-          <p className="text-xs sm:text-sm text-muted-foreground">Small efforts compound into real knowledge.</p>
-        </div>
+      <section className="mb-6 flex-1">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Your Progress</h2>
 
         {/* Main Stats Grid */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-3">
           {mainStats.map((stat, index) => {
             const Icon = stat.icon;
             return (
               <Card 
                 key={stat.label} 
-                className="animate-fade-in"
+                className="border-0 bg-secondary/20"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <CardContent className="p-3 sm:p-4">
-                  <Icon className={cn("w-4 h-4 sm:w-5 sm:h-5 mb-1.5 sm:mb-2", stat.color)} />
-                  <p className="text-xl sm:text-2xl font-bold text-foreground">{stat.value}</p>
-                  <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">{stat.label}</p>
+                <CardContent className="p-4">
+                  <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center mb-2", stat.bgColor)}>
+                    <Icon className={cn("w-4 h-4", stat.color)} />
+                  </div>
+                  <p className="text-2xl font-bold text-foreground">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{stat.label}</p>
                 </CardContent>
               </Card>
             );
@@ -191,48 +186,53 @@ export default function ProfilePage() {
         </div>
 
         {/* Secondary Stats Row */}
-        <div className="grid grid-cols-2 gap-2 sm:gap-3">
-          <Card className="animate-fade-in" style={{ animationDelay: "200ms" }}>
-            <CardContent className="p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-secondary">
-                <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+        <div className="grid grid-cols-2 gap-3">
+          <Card className="border-0 bg-secondary/20">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-accent/15 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-accent" />
               </div>
               <div>
-                <p className="text-base sm:text-lg font-semibold text-foreground">{stats.clarityScore}%</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Clarity Score</p>
+                <p className="text-lg font-semibold text-foreground">{stats.clarityScore}%</p>
+                <p className="text-xs text-muted-foreground">Clarity Score</p>
               </div>
             </CardContent>
           </Card>
-          <Card className="animate-fade-in" style={{ animationDelay: "250ms" }}>
-            <CardContent className="p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-secondary">
-                <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          <Card className="border-0 bg-secondary/20">
+            <CardContent className="p-3 flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-info/15 flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-info" />
               </div>
               <div>
-                <p className="text-base sm:text-lg font-semibold text-foreground">{stats.activeDays}</p>
-                <p className="text-[10px] sm:text-xs text-muted-foreground">Active Days</p>
+                <p className="text-lg font-semibold text-foreground">{stats.activeDays}</p>
+                <p className="text-xs text-muted-foreground">Active Days</p>
               </div>
             </CardContent>
           </Card>
         </div>
       </section>
 
-      {/* Log Out Button */}
-      <button
-        onClick={handleLogout}
-        className="w-full flex items-center justify-center gap-2 py-3.5 sm:py-4 rounded-xl font-medium text-muted-foreground bg-secondary/50 border border-border transition-all hover:bg-secondary hover:text-foreground animate-fade-in text-sm sm:text-base"
-        style={{ animationDelay: "300ms" }}
-      >
-        <LogOut size={18} />
-        <span>Log Out</span>
-      </button>
+      {/* Settings */}
+      <section className="space-y-3">
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Settings</h2>
+        
+        <ThemeToggle />
+        
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 py-3.5 px-4 rounded-xl font-medium text-muted-foreground bg-secondary/50 border border-border transition-all hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 text-sm"
+        >
+          <LogOut size={18} />
+          <span>Log Out</span>
+        </button>
+      </section>
 
       {/* Bookmarks Modal */}
       {showBookmarks && (
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm animate-fade-in">
           <div className="h-full flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between px-4 sm:px-5 py-4 border-b border-border">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h2 className="text-lg font-semibold text-foreground">Saved Snippets</h2>
               <button
                 onClick={() => {
@@ -247,7 +247,7 @@ export default function ProfilePage() {
 
             {/* Content */}
             <ScrollArea className="flex-1">
-              <div className="p-4 sm:p-5">
+              <div className="p-5">
                 {bookmarks.length === 0 ? (
                   <div className="text-center py-12">
                     <Bookmark className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
@@ -258,7 +258,6 @@ export default function ProfilePage() {
                   </div>
                 ) : selectedBookmark ? (
                   <div className="animate-fade-in">
-                    {/* Back button */}
                     <button
                       onClick={() => setSelectedBookmark(null)}
                       className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
@@ -267,8 +266,7 @@ export default function ProfilePage() {
                       <span>Back to list</span>
                     </button>
 
-                    {/* Snippet image */}
-                    <div className="relative w-full h-40 sm:h-48 rounded-xl overflow-hidden mb-4">
+                    <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4">
                       <img
                         src={selectedBookmark.image}
                         alt={selectedBookmark.title}
@@ -280,23 +278,19 @@ export default function ProfilePage() {
                       </span>
                     </div>
 
-                    {/* Title */}
                     <h3 className="text-xl font-bold text-foreground mb-4">{selectedBookmark.title}</h3>
 
-                    {/* Content */}
                     <div className="space-y-3 mb-6">
                       {selectedBookmark.content.split('\n\n').map((p, i) => (
                         <p key={i} className="text-sm text-secondary-foreground leading-relaxed">{p}</p>
                       ))}
                     </div>
 
-                    {/* Example */}
                     <div className="example-block mb-6">
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-2">Example</p>
+                      <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">Example</p>
                       <p className="text-sm text-muted-foreground">{selectedBookmark.example}</p>
                     </div>
 
-                    {/* Remove bookmark */}
                     <button
                       onClick={() => {
                         removeBookmark(selectedBookmark.id);
@@ -312,20 +306,20 @@ export default function ProfilePage() {
                     {bookmarks.map((bookmark) => (
                       <Card
                         key={bookmark.id}
-                        className="cursor-pointer hover:bg-card/80 transition-colors"
+                        className="cursor-pointer border-0 bg-secondary/20 hover:bg-secondary/30 transition-colors"
                         onClick={() => setSelectedBookmark(bookmark)}
                       >
-                        <CardContent className="p-3 sm:p-4 flex gap-3">
+                        <CardContent className="p-4 flex gap-3">
                           <img
                             src={bookmark.image}
                             alt={bookmark.title}
-                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg object-cover flex-shrink-0"
+                            className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
                           />
                           <div className="flex-1 min-w-0">
-                            <span className="text-[10px] sm:text-xs text-primary font-medium">
+                            <span className="text-xs text-primary font-medium">
                               {bookmark.topic}
                             </span>
-                            <h4 className="text-sm sm:text-base font-semibold text-foreground truncate mt-0.5">
+                            <h4 className="font-medium text-foreground truncate mt-0.5">
                               {bookmark.title}
                             </h4>
                             <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
