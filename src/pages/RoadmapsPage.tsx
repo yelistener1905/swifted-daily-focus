@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { ArrowLeft, Beaker, Cpu, DollarSign, MessageCircle, Heart, Lightbulb, ChevronRight, Search, BookOpen, Play } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,12 @@ import { cn } from "@/lib/utils";
 import { useStreaks } from "@/hooks/useStreaks";
 
 const categories = [
-  { id: "science", title: "Science & Nature", icon: Beaker, color: "from-violet-500/20 to-purple-500/20" },
-  { id: "tech", title: "Tech & AI", icon: Cpu, color: "from-blue-500/20 to-cyan-500/20" },
-  { id: "finance", title: "Money & Finance", icon: DollarSign, color: "from-emerald-500/20 to-green-500/20" },
-  { id: "communication", title: "Languages & Communication", icon: MessageCircle, color: "from-teal-500/20 to-cyan-500/20" },
-  { id: "health", title: "Health, Fitness & Mind", icon: Heart, color: "from-rose-500/20 to-pink-500/20" },
-  { id: "life", title: "Life Skills & Lifestyle", icon: Lightbulb, color: "from-amber-500/20 to-orange-500/20" },
+  { id: "science", title: "Science & Nature", icon: Beaker },
+  { id: "tech", title: "Tech & AI", icon: Cpu },
+  { id: "finance", title: "Money & Finance", icon: DollarSign },
+  { id: "communication", title: "Languages", icon: MessageCircle },
+  { id: "health", title: "Health & Mind", icon: Heart },
+  { id: "life", title: "Life Skills", icon: Lightbulb },
 ];
 
 const roadmapsByCategory: Record<string, Array<{ title: string; description: string; lessonsCount: number; completedLessons: number }>> = {
@@ -49,7 +49,6 @@ const roadmapsByCategory: Record<string, Array<{ title: string; description: str
   ],
 };
 
-// Sample snippets data per category
 const snippetsByCategory: Record<string, Array<{ title: string; topic: string; preview: string }>> = {
   science: [
     { title: "The Laws of Thermodynamics", topic: "Physics", preview: "Energy cannot be created or destroyed..." },
@@ -87,9 +86,8 @@ export default function RoadmapsPage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [mainSearchQuery, setMainSearchQuery] = useState("");
-  const { lastActiveRoadmap, updateLastActiveRoadmap, completeSnippet } = useStreaks();
+  const { lastActiveRoadmap, updateLastActiveRoadmap } = useStreaks();
 
-  // Filter roadmaps and snippets based on search (for category detail view)
   const filteredData = useMemo(() => {
     if (!selectedCategory) return { roadmaps: [], snippets: [] };
     
@@ -113,89 +111,95 @@ export default function RoadmapsPage() {
     };
   }, [selectedCategory, searchQuery]);
 
-  // Filter categories based on search (for main page)
   const filteredCategories = useMemo(() => {
     if (!mainSearchQuery.trim()) return categories;
     const query = mainSearchQuery.toLowerCase();
     return categories.filter(c => c.title.toLowerCase().includes(query));
   }, [mainSearchQuery]);
 
+  // Category detail view
   if (selectedCategory) {
     const category = categories.find((c) => c.id === selectedCategory);
 
     return (
-      <div className="px-4 sm:px-5 pt-6 sm:pt-8 pb-6 animate-fade-in">
+      <div className="px-5 pt-4 pb-8 animate-fade-in">
+        {/* Minimal back button */}
         <button
           onClick={() => {
             setSelectedCategory(null);
             setSearchQuery("");
           }}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-4 sm:mb-6 transition-colors"
+          className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground mb-6 transition-colors text-sm"
         >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back to categories</span>
+          <ArrowLeft className="w-4 h-4" />
+          <span>Back</span>
         </button>
 
-        <header className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl font-bold text-foreground">{category?.title}</h1>
-          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-            {filteredData.roadmaps.length} courses, {filteredData.snippets.length} snippets
+        {/* Clean header */}
+        <header className="mb-6">
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">{category?.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {filteredData.roadmaps.length} courses · {filteredData.snippets.length} snippets
           </p>
         </header>
 
-        {/* Search Bar */}
-        <div className="relative mb-5 sm:mb-6">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        {/* Subtle search */}
+        <div className="relative mb-8">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
           <Input
             type="text"
-            placeholder="Search courses and snippets..."
+            placeholder="Search..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-secondary/50 border-border"
+            className="pl-10 h-11 bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/30 placeholder:text-muted-foreground/50"
           />
         </div>
 
-        {/* Roadmaps Section */}
-        <section className="mb-6 sm:mb-8">
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Courses</h2>
-          <div className="space-y-3 sm:space-y-4">
+        {/* Courses */}
+        <section className="mb-10">
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Courses</h2>
+          <div className="space-y-3">
             {filteredData.roadmaps.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No courses found</p>
+              <p className="text-sm text-muted-foreground py-6 text-center">No courses found</p>
             ) : (
               filteredData.roadmaps.map((roadmap, index) => {
                 const progress = roadmap.lessonsCount > 0 ? (roadmap.completedLessons / roadmap.lessonsCount) * 100 : 0;
                 return (
-                  <Card key={index} className="overflow-hidden">
-                    <CardContent className="p-3 sm:p-4">
-                      <h3 className="font-semibold text-foreground text-sm sm:text-base">{roadmap.title}</h3>
-                      <p className="text-muted-foreground text-xs sm:text-sm mt-1">{roadmap.description}</p>
-                      <div className="mt-3">
-                        <div className="flex justify-between text-[10px] sm:text-xs text-muted-foreground mb-1">
-                          <span>{roadmap.completedLessons} / {roadmap.lessonsCount} lessons</span>
-                          <span>{Math.round(progress)}%</span>
+                  <Card key={index} className="border-0 bg-secondary/20 hover:bg-secondary/30 transition-colors">
+                    <CardContent className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-foreground text-[15px] leading-snug">{roadmap.title}</h3>
+                          <p className="text-muted-foreground text-sm mt-1 line-clamp-1">{roadmap.description}</p>
+                          
+                          <div className="mt-3 flex items-center gap-3">
+                            <Progress value={progress} className="h-1 flex-1" />
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              {roadmap.completedLessons}/{roadmap.lessonsCount}
+                            </span>
+                          </div>
                         </div>
-                        <Progress value={progress} className="h-1.5" />
+                        
+                        <Button
+                          size="sm"
+                          variant={roadmap.completedLessons > 0 ? "default" : "secondary"}
+                          className="shrink-0 h-8 px-4 text-xs font-medium"
+                          onClick={() => {
+                            const nextUnitIndex = Math.min(
+                              roadmap.completedLessons,
+                              Math.max(0, roadmap.lessonsCount - 1)
+                            );
+                            updateLastActiveRoadmap(
+                              selectedCategory,
+                              index,
+                              nextUnitIndex,
+                              `Lesson ${nextUnitIndex + 1}`
+                            );
+                          }}
+                        >
+                          {roadmap.completedLessons > 0 ? "Continue" : "Start"}
+                        </Button>
                       </div>
-                      <Button
-                        size="sm"
-                        className="mt-3 w-full text-xs sm:text-sm"
-                        onClick={() => {
-                          // Persist the user's place so the main page can show "Pick up where you left off"
-                          // We don't have a unit list yet, so we derive a reasonable "next" unit label.
-                          const nextUnitIndex = Math.min(
-                            roadmap.completedLessons,
-                            Math.max(0, roadmap.lessonsCount - 1)
-                          );
-                          updateLastActiveRoadmap(
-                            selectedCategory,
-                            index,
-                            nextUnitIndex,
-                            `Lesson ${nextUnitIndex + 1}`
-                          );
-                        }}
-                      >
-                        {roadmap.completedLessons > 0 ? "Continue" : "Start Learning"}
-                      </Button>
                     </CardContent>
                   </Card>
                 );
@@ -204,27 +208,27 @@ export default function RoadmapsPage() {
           </div>
         </section>
 
-        {/* Snippets Section */}
+        {/* Snippets */}
         <section>
-          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Quick Snippets</h2>
-          <div className="space-y-2 sm:space-y-3">
+          <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Quick Reads</h2>
+          <div className="space-y-2">
             {filteredData.snippets.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-4 text-center">No snippets found</p>
+              <p className="text-sm text-muted-foreground py-6 text-center">No snippets found</p>
             ) : (
               filteredData.snippets.map((snippet, index) => (
-                <Card key={index} className="overflow-hidden cursor-pointer hover:border-primary/40 transition-colors">
-                  <CardContent className="p-3 sm:p-4 flex items-start gap-3">
-                    <div className="p-2 rounded-lg bg-primary/10 flex-shrink-0">
-                      <BookOpen className="w-4 h-4 text-primary" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <span className="text-[10px] sm:text-xs text-primary font-medium">{snippet.topic}</span>
-                      <h4 className="font-semibold text-foreground text-sm sm:text-base mt-0.5">{snippet.title}</h4>
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{snippet.preview}</p>
-                    </div>
-                    <ChevronRight className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-1" />
-                  </CardContent>
-                </Card>
+                <div 
+                  key={index} 
+                  className="flex items-center gap-3 p-3 rounded-xl bg-secondary/10 hover:bg-secondary/20 transition-colors cursor-pointer group"
+                >
+                  <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <BookOpen className="w-4 h-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[11px] text-primary/80 font-medium">{snippet.topic}</span>
+                    <h4 className="font-medium text-foreground text-sm leading-snug">{snippet.title}</h4>
+                  </div>
+                  <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors shrink-0" />
+                </div>
               ))
             )}
           </div>
@@ -233,7 +237,7 @@ export default function RoadmapsPage() {
     );
   }
 
-  // Get the continue roadmap info
+  // Main view
   const getContinueRoadmap = () => {
     if (!lastActiveRoadmap) return null;
     const category = categories.find(c => c.id === lastActiveRoadmap.categoryId);
@@ -245,111 +249,106 @@ export default function RoadmapsPage() {
   const continueRoadmap = getContinueRoadmap();
 
   return (
-    <div className="px-4 sm:px-5 pt-6 sm:pt-8 pb-6 animate-fade-in">
-      <header className="mb-4 sm:mb-5">
-        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Learning Paths</h1>
-        <p className="text-muted-foreground text-xs sm:text-sm mt-1">Choose a category to explore</p>
+    <div className="px-5 pt-4 pb-8 animate-fade-in">
+      {/* Clean header */}
+      <header className="mb-6">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">Learn</h1>
+        <p className="text-muted-foreground text-sm mt-0.5">Pick a path that excites you</p>
       </header>
 
-      {/* Search Bar */}
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+      {/* Subtle search */}
+      <div className="relative mb-6">
+        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/60" />
         <Input
           type="text"
-          placeholder="Search categories..."
+          placeholder="Search topics..."
           value={mainSearchQuery}
           onChange={(e) => setMainSearchQuery(e.target.value)}
-          className="pl-10 bg-secondary/50 border-border"
+          className="pl-10 h-11 bg-secondary/30 border-0 focus-visible:ring-1 focus-visible:ring-primary/30 placeholder:text-muted-foreground/50"
         />
       </div>
 
-      {/* Pick up where you left off */}
-      <Card className="mb-5 overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/20 border-primary/30">
-        <CardContent className="p-4 sm:p-5">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-xl bg-primary/20">
+      {/* Pick up where you left off - Premium card */}
+      <div className="mb-8">
+        <div className="rounded-2xl bg-gradient-to-br from-primary/8 via-transparent to-accent/10 p-4 border border-primary/10">
+          <div className="flex items-start gap-3.5">
+            <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center shrink-0">
               <Play className="w-5 h-5 text-primary" />
             </div>
 
-            <div className="flex-1">
-              <span className="text-xs text-primary font-medium">Pick up where you left off</span>
+            <div className="flex-1 min-w-0">
+              <span className="text-xs font-medium text-primary">Continue Learning</span>
 
               {continueRoadmap ? (
                 <>
-                  <h3 className="font-semibold text-foreground mt-1">
+                  <h3 className="font-medium text-foreground mt-0.5 text-[15px] leading-snug">
                     {continueRoadmap.roadmap.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    Unit {continueRoadmap.unitIndex + 1} – {continueRoadmap.unitTitle}
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {continueRoadmap.unitTitle}
                   </p>
-                  <div className="mt-3">
+                  <div className="mt-2.5 flex items-center gap-2">
                     <Progress
                       value={(continueRoadmap.roadmap.completedLessons / continueRoadmap.roadmap.lessonsCount) * 100}
-                      className="h-1.5"
+                      className="h-1 flex-1"
                     />
-                    <span className="text-[10px] text-muted-foreground mt-1 inline-block">
-                      {continueRoadmap.roadmap.completedLessons}/{continueRoadmap.roadmap.lessonsCount} lessons
+                    <span className="text-[10px] text-muted-foreground">
+                      {continueRoadmap.roadmap.completedLessons}/{continueRoadmap.roadmap.lessonsCount}
                     </span>
                   </div>
                 </>
               ) : (
-                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-                  Start any course and we’ll keep your next unit ready here.
+                <p className="text-sm text-muted-foreground mt-0.5">
+                  Start a course to track your progress
                 </p>
               )}
             </div>
 
-            {continueRoadmap ? (
+            {continueRoadmap && (
               <Button
                 size="sm"
-                className="shrink-0"
+                className="shrink-0 h-8 px-4 text-xs font-medium"
                 onClick={() => setSelectedCategory(continueRoadmap.categoryId)}
               >
-                Continue
-              </Button>
-            ) : (
-              <Button
-                size="sm"
-                className="shrink-0"
-                onClick={() => {
-                  document
-                    .getElementById("roadmap-categories")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" });
-                }}
-              >
-                Browse
+                Resume
               </Button>
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      {filteredCategories.length === 0 ? (
-        <p className="text-sm text-muted-foreground py-4 text-center">No categories found</p>
-      ) : (
-        <div id="roadmap-categories" className="grid grid-cols-2 gap-2 sm:gap-3">
-          {filteredCategories.map((category) => {
-            const Icon = category.icon;
-            return (
-              <Card
-                key={category.id}
-                className={cn(
-                  "cursor-pointer hover:border-primary/50 transition-all duration-200 overflow-hidden group"
-                )}
-                onClick={() => setSelectedCategory(category.id)}
-              >
-                <CardContent className={cn("p-3 sm:p-4 bg-gradient-to-br", category.color)}>
-                  <Icon className="w-6 h-6 sm:w-8 sm:h-8 text-primary mb-2 sm:mb-3" />
-                  <h3 className="font-medium text-foreground text-xs sm:text-sm group-hover:text-primary transition-colors">
-                    {category.title}
-                  </h3>
-                  <ChevronRight className="w-4 h-4 text-muted-foreground mt-1 sm:mt-2 group-hover:text-primary transition-colors" />
-                </CardContent>
-              </Card>
-            );
-          })}
         </div>
-      )}
+      </div>
+
+      {/* Category grid - Clean & minimal */}
+      <section>
+        <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Browse Topics</h2>
+        
+        {filteredCategories.length === 0 ? (
+          <p className="text-sm text-muted-foreground py-6 text-center">No topics found</p>
+        ) : (
+          <div id="roadmap-categories" className="grid grid-cols-2 gap-3">
+            {filteredCategories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.id}
+                  className={cn(
+                    "flex flex-col items-start p-4 rounded-xl text-left",
+                    "bg-secondary/20 hover:bg-secondary/35 transition-all duration-200",
+                    "active:scale-[0.98] group"
+                  )}
+                  onClick={() => setSelectedCategory(category.id)}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mb-3">
+                    <Icon className="w-5 h-5 text-primary" />
+                  </div>
+                  <span className="font-medium text-foreground text-sm leading-snug group-hover:text-primary transition-colors">
+                    {category.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
