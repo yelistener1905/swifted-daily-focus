@@ -175,7 +175,7 @@ export default function RoadmapsPage() {
                           <div className="mt-3 flex items-center gap-3">
                             <Progress value={progress} className="h-1 flex-1" />
                             <span className="text-xs text-muted-foreground shrink-0">
-                              {roadmap.completedLessons}/{roadmap.lessonsCount}
+                              {Math.round(progress)}%
                             </span>
                           </div>
                         </div>
@@ -293,7 +293,7 @@ export default function RoadmapsPage() {
                       className="h-1 flex-1"
                     />
                     <span className="text-[10px] text-muted-foreground">
-                      {continueRoadmap.roadmap.completedLessons}/{continueRoadmap.roadmap.lessonsCount}
+                      {Math.round((continueRoadmap.roadmap.completedLessons / continueRoadmap.roadmap.lessonsCount) * 100)}%
                     </span>
                   </div>
                 </>
