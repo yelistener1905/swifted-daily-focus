@@ -1,55 +1,34 @@
 import { Link } from "react-router-dom";
-import { Flame, ArrowRight, BookOpen, Map, Calendar } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Flame, ArrowRight, Calendar, Map, CheckCircle2, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useStreaks } from "@/hooks/useStreaks";
 import { StreakCalendar } from "@/components/streaks/StreakCalendar";
-import { DailyProgress } from "@/components/streaks/DailyProgress";
 import { cn } from "@/lib/utils";
 
 export default function StreaksPage() {
   const {
     currentStreak,
     longestStreak,
-    todayCompleted,
-    dailyGoal,
-    isTodayComplete,
-    snippetsRemaining,
-    progressPercentage,
+    quizAttemptedToday,
     lastActiveRoadmap,
     getWeeklyStreak,
   } = useStreaks();
 
   const weeklyData = getWeeklyStreak();
 
-  // Get motivational message
   const getMotivationalMessage = () => {
-    if (isTodayComplete) {
-      return "Amazing work! You've crushed today's goal. 🎉";
-    }
-    if (todayCompleted === 0) {
-      return "Pick it up today — one good day builds momentum.";
-    }
-    if (todayCompleted < 5) {
-      return "You're warming up! Keep the momentum going.";
-    }
-    return "Almost there! Just a few more to complete today.";
+    if (quizAttemptedToday) return "You've shown up today — that's what matters. 🎉";
+    if (currentStreak > 0) return "Don't break the chain — take a quick quiz today.";
+    return "Start fresh today — one quiz is all it takes.";
   };
 
   return (
     <div className="px-4 sm:px-5 pt-6 sm:pt-8 pb-6 animate-fade-in">
-      {/* Header with Streak */}
       <header className="mb-6 sm:mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground">
-              Your Streak
-            </h1>
-            <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-              {getMotivationalMessage()}
-            </p>
-          </div>
-        </div>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Your Streak</h1>
+        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+          {getMotivationalMessage()}
+        </p>
       </header>
 
       {/* Main Streak Display */}
@@ -81,33 +60,52 @@ export default function StreaksPage() {
             <div className="mt-4 text-center">
               <span className="text-xs text-muted-foreground">
                 Longest streak:{" "}
-                <span className="font-semibold text-foreground">
-                  {longestStreak} days
-                </span>
+                <span className="font-semibold text-foreground">{longestStreak} days</span>
               </span>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Daily Progress */}
+      {/* Today's Status */}
       <div className="mb-5">
-        <DailyProgress
-          completed={todayCompleted}
-          goal={dailyGoal}
-          progressPercentage={progressPercentage}
-          isComplete={isTodayComplete}
-        />
+        <div className="bg-card rounded-2xl border border-border/50 p-4 sm:p-5">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Today's Status
+            </h3>
+            <div
+              className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium",
+                quizAttemptedToday
+                  ? "bg-success/15 text-success"
+                  : "bg-warning/15 text-warning"
+              )}
+            >
+              {quizAttemptedToday ? (
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              ) : (
+                <Clock className="w-3.5 h-3.5" />
+              )}
+              <span>{quizAttemptedToday ? "Completed" : "Pending"}</span>
+            </div>
+          </div>
+
+          <p className="text-sm text-muted-foreground">
+            {quizAttemptedToday
+              ? "You've completed a quiz today. Great work!"
+              : "Attempt at least one quiz to keep your streak alive."}
+          </p>
+        </div>
       </div>
 
       {/* Weekly Calendar */}
       <div className="mb-6">
-        <StreakCalendar weeklyData={weeklyData} dailyGoal={dailyGoal} />
+        <StreakCalendar weeklyData={weeklyData} />
       </div>
 
       {/* Action Cards */}
       <div className="space-y-3">
-        {/* Continue Learning CTA */}
         <Link to="/daily">
           <Card className="cursor-pointer hover:border-primary/50 transition-all group">
             <CardContent className="p-4 flex items-center gap-4">
@@ -116,10 +114,10 @@ export default function StreaksPage() {
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
-                  Continue Today's Learning
+                  Take Today's Quiz
                 </h3>
                 <p className="text-xs sm:text-sm text-muted-foreground">
-                  Daily quiz, vocab & long read
+                  Quick quiz to keep your streak
                 </p>
               </div>
               <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -127,7 +125,6 @@ export default function StreaksPage() {
           </Card>
         </Link>
 
-        {/* Resume Roadmap CTA */}
         {lastActiveRoadmap ? (
           <Link to="/roadmaps">
             <Card className="cursor-pointer hover:border-primary/50 transition-all group">
@@ -140,8 +137,7 @@ export default function StreaksPage() {
                     Pick Up Where You Left Off
                   </h3>
                   <p className="text-xs sm:text-sm text-muted-foreground">
-                    Continue: Unit {lastActiveRoadmap.unitIndex + 1} –{" "}
-                    {lastActiveRoadmap.unitTitle}
+                    Continue: Unit {lastActiveRoadmap.unitIndex + 1} – {lastActiveRoadmap.unitTitle}
                   </p>
                 </div>
                 <ArrowRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -173,17 +169,15 @@ export default function StreaksPage() {
       {/* How Streaks Work */}
       <Card className="mt-6 bg-secondary/30 border-border/30">
         <CardContent className="p-4">
-          <h4 className="text-sm font-semibold text-foreground mb-2">
-            How Streaks Work
-          </h4>
+          <h4 className="text-sm font-semibold text-foreground mb-2">How Streaks Work</h4>
           <ul className="text-xs sm:text-sm text-muted-foreground space-y-1.5">
             <li className="flex items-start gap-2">
               <span className="text-primary">•</span>
-              Complete {dailyGoal} snippets per day to maintain your streak
+              Attempt at least 1 quiz per day to maintain your streak
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary">•</span>
-              Snippets from Daily section and Roadmaps both count
+              Quizzes from Daily, Roadmaps, and Snippets all count
             </li>
             <li className="flex items-start gap-2">
               <span className="text-primary">•</span>

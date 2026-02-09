@@ -1,6 +1,6 @@
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Flame, Check } from "lucide-react";
+import { Check } from "lucide-react";
 
 interface DayData {
   date: Date;
@@ -12,10 +12,9 @@ interface DayData {
 
 interface StreakCalendarProps {
   weeklyData: DayData[];
-  dailyGoal: number;
 }
 
-export function StreakCalendar({ weeklyData, dailyGoal }: StreakCalendarProps) {
+export function StreakCalendar({ weeklyData }: StreakCalendarProps) {
   return (
     <div className="bg-card rounded-2xl border border-border/50 p-4 sm:p-5">
       <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
@@ -40,13 +39,9 @@ export function StreakCalendar({ weeklyData, dailyGoal }: StreakCalendarProps) {
               {day.isGoalMet ? (
                 <Check className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
               ) : day.isToday ? (
-                <span className="text-xs font-bold text-primary">
-                  {day.completed}
-                </span>
+                <span className="text-xs font-bold text-primary">–</span>
               ) : (
-                <span className="text-xs text-muted-foreground">
-                  {day.completed > 0 ? day.completed : "–"}
-                </span>
+                <span className="text-xs text-muted-foreground">–</span>
               )}
             </div>
             <span

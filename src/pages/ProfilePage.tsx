@@ -6,8 +6,13 @@ import { format } from "date-fns";
 import { useBookmarks, BookmarkedSnippet } from "@/hooks/useBookmarks";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/contexts/AuthContext";
+import { useStreaks } from "@/hooks/useStreaks";
 
 export default function ProfilePage() {
+  const { user, isAuthenticated, logout } = useAuth();
+  const { currentStreak, longestStreak } = useStreaks();
+
   const [stats, setStats] = useState({
     conceptsLearned: 0,
     understandingVerified: 0,
@@ -15,8 +20,6 @@ export default function ProfilePage() {
     timeInvested: 0,
     clarityScore: 0,
     activeDays: 0,
-    currentStreak: 0,
-    longestStreak: 0,
   });
   const [showBookmarks, setShowBookmarks] = useState(false);
   const [selectedBookmark, setSelectedBookmark] = useState<BookmarkedSnippet | null>(null);
@@ -25,79 +28,35 @@ export default function ProfilePage() {
 
   useEffect(() => {
     const savedStats = localStorage.getItem("swifted-stats");
-    const streakData = localStorage.getItem("swifted-streak");
-    
     let parsedStats = { snippetsCompleted: 0, totalPoints: 0 };
-    if (savedStats) {
-      parsedStats = JSON.parse(savedStats);
-    }
-
-    let currentStreak = 0;
-    let longestStreak = 0;
-    let activeDays = 0;
-    
-    if (streakData) {
-      const streak = JSON.parse(streakData);
-      currentStreak = streak.currentStreak || 0;
-      longestStreak = streak.longestStreak || 0;
-      activeDays = streak.activeDays || 0;
-    } else {
-      const today = format(new Date(), "yyyy-MM-dd");
-      const dailyVisited = localStorage.getItem("swifted-daily-visited");
-      if (dailyVisited === today) {
-        currentStreak = 1;
-        longestStreak = 1;
-        activeDays = 1;
-      }
-    }
+    if (savedStats) parsedStats = JSON.parse(savedStats);
 
     const snippets = parsedStats.snippetsCompleted || 0;
-    
+
     setStats({
       conceptsLearned: snippets * 3,
       understandingVerified: Math.floor(snippets * 0.8),
       skillsUnlocked: Math.floor(snippets / 5),
       timeInvested: snippets * 4,
       clarityScore: snippets > 0 ? Math.min(95, 60 + snippets * 2) : 0,
-      activeDays: activeDays || Math.min(snippets, 14),
-      currentStreak,
-      longestStreak,
+      activeDays: Math.min(snippets, 14),
     });
   }, []);
 
   const handleLogout = () => {
-    console.log("Logging out...");
+    logout();
+    // Redirect handled by auth state change
+    window.location.href = "/";
   };
 
+  const displayName = user?.name || "Learner";
+  const displayInitial = displayName.charAt(0).toUpperCase();
+
   const mainStats = [
-    { 
-      label: "Concepts Learned", 
-      value: stats.conceptsLearned, 
-      icon: Brain,
-      color: "text-primary",
-      bgColor: "bg-primary/10"
-    },
-    { 
-      label: "Understanding Verified", 
-      value: stats.understandingVerified, 
-      icon: CheckCircle2,
-      color: "text-success",
-      bgColor: "bg-success/10"
-    },
-    { 
-      label: "Skills Unlocked", 
-      value: stats.skillsUnlocked, 
-      icon: Unlock,
-      color: "text-warning",
-      bgColor: "bg-warning/10"
-    },
-    { 
-      label: "Time Invested", 
-      value: `${stats.timeInvested}m`, 
-      icon: Clock,
-      color: "text-info",
-      bgColor: "bg-info/10"
-    },
+    { label: "Concepts Learned", value: stats.conceptsLearned, icon: Brain, color: "text-primary", bgColor: "bg-primary/10" },
+    { label: "Understanding Verified", value: stats.understandingVerified, icon: CheckCircle2, color: "text-success", bgColor: "bg-success/10" },
+    { label: "Skills Unlocked", value: stats.skillsUnlocked, icon: Unlock, color: "text-warning", bgColor: "bg-warning/10" },
+    { label: "Time Invested", value: `${stats.timeInvested}m`, icon: Clock, color: "text-info", bgColor: "bg-info/10" },
   ];
 
   return (
@@ -105,12 +64,18 @@ export default function ProfilePage() {
       {/* User Header */}
       <header className="mb-6">
         <div className="flex items-center gap-4 mb-6">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-            <span className="text-xl font-bold text-primary">S</span>
-          </div>
+          {user?.avatar ? (
+            <img src={user.avatar} alt={displayName} className="w-14 h-14 rounded-2xl object-cover" />
+          ) : (
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+              <span className="text-xl font-bold text-primary">{displayInitial}</span>
+            </div>
+          )}
           <div>
-            <h1 className="text-xl font-semibold text-foreground tracking-tight">Learner</h1>
-            <p className="text-sm text-muted-foreground">Learning since Jan 2025</p>
+            <h1 className="text-xl font-semibold text-foreground tracking-tight">{displayName}</h1>
+            <p className="text-sm text-muted-foreground">
+              {isAuthenticated ? user?.email : "Not signed in"}
+            </p>
           </div>
         </div>
       </header>
@@ -125,19 +90,19 @@ export default function ProfilePage() {
             <div>
               <p className="text-sm text-muted-foreground">Current Streak</p>
               <p className="text-2xl font-bold text-foreground">
-                {stats.currentStreak} {stats.currentStreak === 1 ? "day" : "days"}
+                {currentStreak} {currentStreak === 1 ? "day" : "days"}
               </p>
             </div>
           </div>
           <div className="text-right">
             <p className="text-xs text-muted-foreground">Longest</p>
-            <p className="text-lg font-semibold text-warning">{stats.longestStreak} days</p>
+            <p className="text-lg font-semibold text-warning">{longestStreak} days</p>
           </div>
         </div>
       </div>
 
       {/* Saved Snippets Card */}
-      <Card 
+      <Card
         className="mb-4 cursor-pointer hover:bg-secondary/30 transition-all border-0 bg-secondary/20"
         onClick={() => setShowBookmarks(true)}
       >
@@ -162,17 +127,11 @@ export default function ProfilePage() {
       {/* Learning Snapshot */}
       <section className="mb-6 flex-1">
         <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-4">Your Progress</h2>
-
-        {/* Main Stats Grid */}
         <div className="grid grid-cols-2 gap-3 mb-3">
           {mainStats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <Card 
-                key={stat.label} 
-                className="border-0 bg-secondary/20"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
+              <Card key={stat.label} className="border-0 bg-secondary/20" style={{ animationDelay: `${index * 50}ms` }}>
                 <CardContent className="p-4">
                   <div className={cn("w-9 h-9 rounded-lg flex items-center justify-center mb-2", stat.bgColor)}>
                     <Icon className={cn("w-4 h-4", stat.color)} />
@@ -185,7 +144,6 @@ export default function ProfilePage() {
           })}
         </div>
 
-        {/* Secondary Stats Row */}
         <div className="grid grid-cols-2 gap-3">
           <Card className="border-0 bg-secondary/20">
             <CardContent className="p-3 flex items-center gap-3">
@@ -215,15 +173,13 @@ export default function ProfilePage() {
       {/* Settings */}
       <section className="space-y-3">
         <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Settings</h2>
-        
         <ThemeToggle />
-        
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-3 py-3.5 px-4 rounded-xl font-medium text-muted-foreground bg-secondary/50 border border-border transition-all hover:bg-destructive/10 hover:text-destructive hover:border-destructive/30 text-sm"
         >
           <LogOut size={18} />
-          <span>Log Out</span>
+          <span>{isAuthenticated ? "Log Out" : "Log Out"}</span>
         </button>
       </section>
 
@@ -231,71 +187,46 @@ export default function ProfilePage() {
       {showBookmarks && (
         <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-sm animate-fade-in">
           <div className="h-full flex flex-col">
-            {/* Header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h2 className="text-lg font-semibold text-foreground">Saved Snippets</h2>
               <button
-                onClick={() => {
-                  setShowBookmarks(false);
-                  setSelectedBookmark(null);
-                }}
+                onClick={() => { setShowBookmarks(false); setSelectedBookmark(null); }}
                 className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
-
-            {/* Content */}
             <ScrollArea className="flex-1">
               <div className="p-5">
                 {bookmarks.length === 0 ? (
                   <div className="text-center py-12">
                     <Bookmark className="w-12 h-12 mx-auto text-muted-foreground/50 mb-4" />
                     <p className="text-muted-foreground">No saved snippets yet</p>
-                    <p className="text-sm text-muted-foreground/70 mt-1">
-                      Tap the bookmark icon on any snippet to save it here
-                    </p>
+                    <p className="text-sm text-muted-foreground/70 mt-1">Tap the bookmark icon on any snippet to save it here</p>
                   </div>
                 ) : selectedBookmark ? (
                   <div className="animate-fade-in">
-                    <button
-                      onClick={() => setSelectedBookmark(null)}
-                      className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4"
-                    >
+                    <button onClick={() => setSelectedBookmark(null)} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
                       <ChevronRight className="w-4 h-4 rotate-180" />
                       <span>Back to list</span>
                     </button>
-
                     <div className="relative w-full h-48 rounded-xl overflow-hidden mb-4">
-                      <img
-                        src={selectedBookmark.image}
-                        alt={selectedBookmark.title}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={selectedBookmark.image} alt={selectedBookmark.title} className="w-full h-full object-cover" />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
-                      <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg text-xs font-semibold bg-background/80 text-primary">
-                        {selectedBookmark.topic}
-                      </span>
+                      <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-lg text-xs font-semibold bg-background/80 text-primary">{selectedBookmark.topic}</span>
                     </div>
-
                     <h3 className="text-xl font-bold text-foreground mb-4">{selectedBookmark.title}</h3>
-
                     <div className="space-y-3 mb-6">
                       {selectedBookmark.content.split('\n\n').map((p, i) => (
                         <p key={i} className="text-sm text-secondary-foreground leading-relaxed">{p}</p>
                       ))}
                     </div>
-
                     <div className="example-block mb-6">
                       <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-2">Example</p>
                       <p className="text-sm text-muted-foreground">{selectedBookmark.example}</p>
                     </div>
-
                     <button
-                      onClick={() => {
-                        removeBookmark(selectedBookmark.id);
-                        setSelectedBookmark(null);
-                      }}
+                      onClick={() => { removeBookmark(selectedBookmark.id); setSelectedBookmark(null); }}
                       className="w-full py-3 rounded-xl font-medium text-destructive bg-destructive/10 border border-destructive/20 hover:bg-destructive/20 transition-colors"
                     >
                       Remove from Saved
@@ -304,27 +235,13 @@ export default function ProfilePage() {
                 ) : (
                   <div className="space-y-3">
                     {bookmarks.map((bookmark) => (
-                      <Card
-                        key={bookmark.id}
-                        className="cursor-pointer border-0 bg-secondary/20 hover:bg-secondary/30 transition-colors"
-                        onClick={() => setSelectedBookmark(bookmark)}
-                      >
+                      <Card key={bookmark.id} className="cursor-pointer border-0 bg-secondary/20 hover:bg-secondary/30 transition-colors" onClick={() => setSelectedBookmark(bookmark)}>
                         <CardContent className="p-4 flex gap-3">
-                          <img
-                            src={bookmark.image}
-                            alt={bookmark.title}
-                            className="w-20 h-20 rounded-lg object-cover flex-shrink-0"
-                          />
+                          <img src={bookmark.image} alt={bookmark.title} className="w-20 h-20 rounded-lg object-cover flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <span className="text-xs text-primary font-medium">
-                              {bookmark.topic}
-                            </span>
-                            <h4 className="font-medium text-foreground truncate mt-0.5">
-                              {bookmark.title}
-                            </h4>
-                            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                              {bookmark.content.slice(0, 100)}...
-                            </p>
+                            <span className="text-xs text-primary font-medium">{bookmark.topic}</span>
+                            <h4 className="font-medium text-foreground truncate mt-0.5">{bookmark.title}</h4>
+                            <p className="text-xs text-muted-foreground line-clamp-2 mt-1">{bookmark.content.slice(0, 100)}...</p>
                           </div>
                         </CardContent>
                       </Card>

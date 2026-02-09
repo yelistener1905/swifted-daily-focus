@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import StreaksPage from "./pages/StreaksPage";
@@ -32,9 +33,11 @@ const App = () => {
     return (
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <TooltipProvider>
-            <StartupPage onStart={handleStart} />
-          </TooltipProvider>
+          <AuthProvider>
+            <TooltipProvider>
+              <StartupPage onStart={handleStart} />
+            </TooltipProvider>
+          </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>
     );
@@ -43,22 +46,24 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AppLayout>
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/streaks" element={<StreaksPage />} />
-                <Route path="/daily" element={<DailyPage />} />
-                <Route path="/roadmaps" element={<RoadmapsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </AppLayout>
-          </BrowserRouter>
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppLayout>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/streaks" element={<StreaksPage />} />
+                  <Route path="/daily" element={<DailyPage />} />
+                  <Route path="/roadmaps" element={<RoadmapsPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AppLayout>
+            </BrowserRouter>
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
