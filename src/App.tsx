@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import HomePage from "./pages/HomePage";
 import StreaksPage from "./pages/StreaksPage";
@@ -14,12 +14,14 @@ import RoadmapsPage from "./pages/RoadmapsPage";
 import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 import StartupPage from "./pages/StartupPage";
+import NamePrompt from "./components/auth/NamePrompt";
 
 const queryClient = new QueryClient();
 
 const STARTUP_SHOWN_KEY = "swifted-startup-shown";
 
-const App = () => {
+function AppInner() {
+  const { needsName, isAuthenticated } = useAuth();
   const [showStartup, setShowStartup] = useState(() => {
     return !localStorage.getItem(STARTUP_SHOWN_KEY);
   });
@@ -29,39 +31,49 @@ const App = () => {
     setShowStartup(false);
   };
 
-  if (showStartup) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-          <AuthProvider>
-            <TooltipProvider>
-              <StartupPage onStart={handleStart} />
-            </TooltipProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    );
+  // Show startup for unauthenticated + never seen
+  if (showStartup && !isAuthenticated) {
+    return <StartupPage onStart={handleStart} />;
   }
 
+  // Show name prompt after first Google login
+  if (needsName) {
+    return <NamePrompt />;
+  }
+
+  // If startup was skipped but user later logged in, dismiss startup
+  if (showStartup && isAuthenticated) {
+    localStorage.setItem(STARTUP_SHOWN_KEY, "true");
+    setShowStartup(false);
+  }
+
+  return (
+    <>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <AppLayout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/streaks" element={<StreaksPage />} />
+            <Route path="/daily" element={<DailyPage />} />
+            <Route path="/roadmaps" element={<RoadmapsPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AppLayout>
+      </BrowserRouter>
+    </>
+  );
+}
+
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
         <AuthProvider>
           <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AppLayout>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/streaks" element={<StreaksPage />} />
-                  <Route path="/daily" element={<DailyPage />} />
-                  <Route path="/roadmaps" element={<RoadmapsPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </AppLayout>
-            </BrowserRouter>
+            <AppInner />
           </TooltipProvider>
         </AuthProvider>
       </ThemeProvider>
