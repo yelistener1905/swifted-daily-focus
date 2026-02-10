@@ -36,10 +36,17 @@ export function useStreaks() {
   const [streakData, setStreakData] = useState<StreakData>(() => {
     const stored = localStorage.getItem(STREAKS_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored) as StreakData;
+      const parsed = JSON.parse(stored) as Partial<StreakData>;
       const today = format(new Date(), "yyyy-MM-dd");
-      const todayCount = parsed.streakHistory[today] || 0;
-      return { ...parsed, quizzesToday: todayCount };
+      const history = parsed.streakHistory || {};
+      const todayCount = history[today] || 0;
+      return {
+        ...defaultStreakData,
+        ...parsed,
+        milestones: { ...defaultStreakData.milestones, ...(parsed.milestones || {}) },
+        streakHistory: history,
+        quizzesToday: todayCount,
+      };
     }
     return defaultStreakData;
   });
