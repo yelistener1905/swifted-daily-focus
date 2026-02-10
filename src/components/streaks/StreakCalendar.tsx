@@ -30,16 +30,16 @@ export function StreakCalendar({ weeklyData }: StreakCalendarProps) {
               className={cn(
                 "w-9 h-9 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center transition-all",
                 day.isGoalMet
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-warning text-warning-foreground"
                   : day.isToday
-                  ? "bg-secondary border-2 border-primary/50"
+                  ? "bg-secondary border-2 border-warning/50"
                   : "bg-secondary/50"
               )}
             >
               {day.isGoalMet ? (
                 <Check className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={3} />
               ) : day.isToday ? (
-                <span className="text-xs font-bold text-primary">–</span>
+                <span className="text-[9px] font-bold text-info">{day.completed}/10</span>
               ) : (
                 <span className="text-xs text-muted-foreground">–</span>
               )}
@@ -47,7 +47,7 @@ export function StreakCalendar({ weeklyData }: StreakCalendarProps) {
             <span
               className={cn(
                 "text-[10px] sm:text-xs",
-                day.isToday ? "text-primary font-semibold" : "text-muted-foreground"
+                day.isToday ? "text-warning font-semibold" : "text-muted-foreground"
               )}
             >
               {format(day.date, "d")}

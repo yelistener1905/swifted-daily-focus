@@ -27,8 +27,8 @@ export function DailyProgress({
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium",
             isComplete
-              ? "bg-primary/15 text-primary"
-              : "bg-secondary text-muted-foreground"
+              ? "bg-success/15 text-success"
+              : "bg-info/15 text-info"
           )}
         >
           <BookOpen className="w-3.5 h-3.5" />
@@ -42,14 +42,14 @@ export function DailyProgress({
 
       <div className="flex items-center justify-between">
         {isComplete ? (
-          <div className="flex items-center gap-2 text-primary">
+          <div className="flex items-center gap-2 text-success">
             <CheckCircle2 className="w-4 h-4" />
-            <span className="text-sm font-medium">Daily goal complete!</span>
+            <span className="text-sm font-medium">Nice work 👏 Goal complete!</span>
           </div>
         ) : (
           <p className="text-sm text-muted-foreground">
             <span className="font-semibold text-foreground">{remaining}</span>{" "}
-            snippets to go
+            {remaining === 1 ? "quiz" : "quizzes"} to go
           </p>
         )}
         <span className="text-xs text-muted-foreground">

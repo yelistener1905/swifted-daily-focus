@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Brain, CheckCircle2, Unlock, Clock, Flame, Calendar, LogOut, Bookmark, ChevronRight, X } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useBookmarks, BookmarkedSnippet } from "@/hooks/useBookmarks";
@@ -11,7 +12,7 @@ import { useStreaks } from "@/hooks/useStreaks";
 
 export default function ProfilePage() {
   const { user, isAuthenticated, logout } = useAuth();
-  const { currentStreak, longestStreak } = useStreaks();
+  const { currentStreak, longestStreak, quizzesToday, quizGoal, dailyGoalComplete, progressPercentage } = useStreaks();
 
   const [stats, setStats] = useState({
     conceptsLearned: 0,
@@ -45,8 +46,6 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     logout();
-    // Redirect handled by auth state change
-    window.location.href = "/";
   };
 
   const displayName = user?.name || "Learner";
@@ -79,6 +78,17 @@ export default function ProfilePage() {
           </div>
         </div>
       </header>
+
+      {/* Today's Progress Mini */}
+      <div className="mb-4 rounded-2xl bg-card border border-border/50 p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Today's Progress</span>
+          <span className={cn("text-xs font-medium", dailyGoalComplete ? "text-success" : "text-info")}>
+            {quizzesToday}/{quizGoal} quizzes
+          </span>
+        </div>
+        <Progress value={progressPercentage} className="h-2.5" />
+      </div>
 
       {/* Streak Card */}
       <div className="mb-4 rounded-2xl bg-gradient-to-br from-warning/10 via-transparent to-rose/10 p-4 border border-warning/20">
